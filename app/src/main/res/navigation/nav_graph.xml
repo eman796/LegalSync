@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFragment">
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.development.legally.ui.auth.LoginFragment"
+        android:label="Login" />
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.development.legally.ui.home.HomeFragment"
+        android:label="Home">
+        <action
+            android:id="@+id/action_home_to_clients"
+            app:destination="@id/clientsFragment" />
+        <action
+            android:id="@+id/action_home_to_cases"
+            app:destination="@id/casesFragment" />
+        <action
+            android:id="@+id/action_home_to_reminders"
+            app:destination="@id/remindersFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/clientsFragment"
+        android:name="com.development.legally.ui.clients.ClientsFragment"
+        android:label="Clientes" />
+
+    <fragment
+        android:id="@+id/casesFragment"
+        android:name="com.development.legally.ui.cases.CasesFragment"
+        android:label="Expedientes" />
+
+    <fragment
+        android:id="@+id/followUpsFragment"
+        android:name="com.development.legally.ui.followups.FollowUpsFragment"
+        android:label="Seguimientos" />
+
+    <fragment
+        android:id="@+id/remindersFragment"
+        android:name="com.development.legally.ui.reminders.RemindersFragment"
+        android:label="Recordatorios" />
+
+</navigation>
