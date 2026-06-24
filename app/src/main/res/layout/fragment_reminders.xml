@@ -1,6 +1,182 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#171E27">
+
+    <!-- 2. Botón Usuario -->
+    <ImageView
+        android:id="@+id/btn_usuario"
+        android:layout_width="15dp"
+        android:layout_height="19dp"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="32dp"
+        android:src="@drawable/boton_usuario_expedientes"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 3. Botón Notificaciones -->
+    <ImageView
+        android:id="@+id/btn_notificaciones"
+        android:layout_width="15dp"
+        android:layout_height="19dp"
+        android:layout_marginEnd="15dp"
+        android:layout_marginTop="32dp"
+        android:src="@drawable/boton_notificaciones_expedientes"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- 4. Barra de búsqueda -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/container_busqueda"
+        android:layout_width="360dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="67dp"
+        android:background="@drawable/barra_de_busqueda_expedientes_"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/texto_busqueda"
+            android:layout_width="250dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="16.18dp"
+            android:src="@drawable/texto_barra_de_busquedas"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/btn_cancelar"
+            android:layout_width="25.83dp"
+            android:layout_height="30dp"
+            android:layout_marginEnd="7.17dp"
+            android:background="#9E8D44"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- 5. Lista de Recordatorios -->
+    <ScrollView
+        android:id="@+id/scroll_lista"
+        android:layout_width="360dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="136dp"
+        android:layout_marginBottom="86dp"
+        android:scrollbars="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHeight_max="654dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Elemento Recordatorio (usando base de expedientes) -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/elemento_lista_expedientes_expedientes">
+
+                <ImageView
+                    android:id="@+id/icono_martillo"
+                    android:layout_width="32dp"
+                    android:layout_height="44.01dp"
+                    android:layout_marginTop="14.07dp"
+                    android:src="@drawable/imasghen_del_martillo_lista_expedientes"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <!-- Nota: Aquí podrías usar TextViews si quieres texto dinámico,
+                     o los SVGs de texto si el diseño es estático -->
+                <ImageView
+                    android:id="@+id/numero_caso"
+                    android:layout_width="158.79dp"
+                    android:layout_height="26.14dp"
+                    android:layout_marginStart="29.44dp"
+                    android:src="@drawable/numero_de_caso_lista_expedientes_expedientes"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ImageView
+                    android:id="@+id/btn_ir"
+                    android:layout_width="8.49dp"
+                    android:layout_height="17.07dp"
+                    android:layout_marginTop="10.35dp"
+                    android:layout_marginEnd="1.01dp"
+                    android:src="@drawable/boton_ir_a_lista_expedientes_expedientes"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 1. Barra inferior Recordatorios -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/barra_inferior"
+        android:layout_width="match_parent"
+        android:layout_height="86dp"
+        android:background="@drawable/barra_inferior_expedientes"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView
+            android:id="@+id/btn_inicio"
+            android:layout_width="32dp"
+            android:layout_height="44.01dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="30dp"
+            android:src="@drawable/boton_inicio_expedientes"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/btn_expedientes"
+            android:layout_width="58dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="71dp"
+            android:layout_marginTop="30dp"
+            android:src="@drawable/boton_expedientes_expedientes"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/btn_crear"
+            android:layout_width="86dp"
+            android:layout_height="86dp"
+            android:layout_marginStart="152dp"
+            android:src="@drawable/boton_crear_expedientes"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Agenda Activo -->
+        <ImageView
+            android:id="@+id/btn_agenda"
+            android:layout_width="58dp"
+            android:layout_height="43dp"
+            android:layout_marginStart="281dp"
+            android:layout_marginTop="31dp"
+            android:src="@drawable/boton_agendaexpedientes"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/btn_clientes"
+            android:layout_width="58dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="330dp"
+            android:layout_marginTop="30dp"
+            android:src="@drawable/boton_clientes_expedientes"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

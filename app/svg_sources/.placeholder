@@ -1,0 +1,2 @@
+This directory contains source SVG files that are converted to Android Vector Drawables.
+These files are kept here as reference but are not directly used in the Android build to avoid errors.
