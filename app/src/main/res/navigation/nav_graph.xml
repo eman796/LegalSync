@@ -30,6 +30,25 @@
         android:label="Clientes" />
 
     <fragment
+        android:id="@+id/clientFormFragment"
+        android:name="com.development.legally.ui.clients.ClientFormFragment"
+        android:label="Cliente Form">
+        <argument
+            android:name="clientId"
+            app:argType="string"
+            android:defaultValue="" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/clientDetailFragment"
+        android:name="com.development.legally.ui.clients.ClientDetailFragment"
+        android:label="Cliente Detalle">
+        <argument
+            android:name="clientId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
         android:id="@+id/casesFragment"
         android:name="com.development.legally.ui.cases.CasesFragment"
         android:label="Expedientes" />
@@ -37,7 +56,16 @@
     <fragment
         android:id="@+id/followUpsFragment"
         android:name="com.development.legally.ui.followups.FollowUpsFragment"
-        android:label="Seguimientos" />
+        android:label="Seguimientos">
+        <argument android:name="caseId" app:argType="string" android:defaultValue="" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/followUpFormFragment"
+        android:name="com.development.legally.ui.followups.FollowUpFormFragment"
+        android:label="Crear Seguimiento">
+        <argument android:name="caseId" app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/remindersFragment"
