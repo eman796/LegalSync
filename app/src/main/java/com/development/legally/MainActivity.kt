@@ -1,23 +1,69 @@
 package com.development.legally
 
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.NavController
-import androidx.navigation.fragment.NavHostFragment
-import com.development.legally.databinding.ActivityMainBinding
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.development.legally.ui.auth.LoginScreen
+import com.development.legally.ui.auth.RegistrationScreen
+import com.development.legally.ui.auth.WelcomeScreen
+import com.development.legally.ui.cases.CasesScreen
+import com.development.legally.ui.navigation.Screen
+import com.development.legally.ui.theme.LegallyTheme
 
-class MainActivity : AppCompatActivity() {
-
-    private lateinit var binding: ActivityMainBinding
-    private lateinit var navController: NavController
-
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContent {
+            LegallyTheme {
+                LegallyApp()
+            }
+        }
+    }
+}
 
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment) as NavHostFragment
-        navController = navHostFragment.navController
+@Composable
+fun LegallyApp() {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = Screen.Welcome.route
+    ) {
+        composable(Screen.Welcome.route) {
+            WelcomeScreen(
+                onLoginClick = {
+                    navController.navigate(Screen.Login.route)
+                },
+                onSignupClick = {
+                    navController.navigate(Screen.Registration.route)
+                }
+            )
+        }
+        composable(Screen.Login.route) {
+            LoginScreen(
+                onLoginSuccess = {
+                    navController.navigate(Screen.Cases.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable(Screen.Registration.route) {
+            RegistrationScreen(
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onRequestRegistration = { _, _ ->
+                    navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Cases.route) {
+            CasesScreen()
+        }
     }
 }

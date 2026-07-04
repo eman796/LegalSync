@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">Legally</string>
+    <string name="welcome_app_name">LEGALLY</string>
+    <string name="welcome_tagline">“Explore the law expertly\n&amp; with ease”</string>
+    <string name="login">Login</string>
+    <string name="signup">Signup</string>
+    <string name="username">Username</string>
+    <string name="password">Contraseña</string>
+    <string name="registration_form_title">Formulario Registro</string>
+    <string name="full_name_placeholder">Nombre completo</string>
+    <string name="request_registration">Solicitar Registro</string>
 </resources>
