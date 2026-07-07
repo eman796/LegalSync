@@ -11,6 +11,7 @@ import com.development.legally.ui.auth.LoginScreen
 import com.development.legally.ui.auth.RegistrationScreen
 import com.development.legally.ui.auth.WelcomeScreen
 import com.development.legally.ui.cases.CasesScreen
+import com.development.legally.ui.home.HomeScreen
 import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
 
@@ -46,7 +47,7 @@ fun LegallyApp() {
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
-                    navController.navigate(Screen.Cases.route) {
+                    navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
                 }
@@ -59,6 +60,13 @@ fun LegallyApp() {
                 },
                 onRequestRegistration = { _, _ ->
                     navController.popBackStack()
+                }
+            )
+        }
+        composable(Screen.Home.route) {
+            HomeScreen(
+                onNavigateToCases = {
+                    navController.navigate(Screen.Cases.route)
                 }
             )
         }

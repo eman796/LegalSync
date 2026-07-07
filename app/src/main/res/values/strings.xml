@@ -9,4 +9,27 @@
     <string name="registration_form_title">Formulario Registro</string>
     <string name="full_name_placeholder">Nombre completo</string>
     <string name="request_registration">Solicitar Registro</string>
+
+    <string name="search_hint">Buscar</string>
+    <string name="what_is_for_today">Que hay para hoy?</string>
+    <string name="active_files">Expedientes\nActivos</string>
+    <string name="hearings">Audiencias</string>
+    <string name="upcoming_commitments">Compromisos\nPróximamente</string>
+    <string name="pending_tasks">Tareas\nPendientes</string>
+    <string name="what_follows_now">Que sigue ahora?</string>
+    <string name="most_recent_cases">Casos mas recientes</string>
+    <string name="view_all">Ver todos</string>
+    <string name="pending_header">Pendientes:</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_files">Expedientes</string>
+    <string name="nav_create">Crear</string>
+    <string name="nav_agenda">Agenda</string>
+    <string name="nav_clients">Clientes</string>
+    <string name="for_today">Para: hoy</string>
+
+    <string name="new_label">Nuevo</string>
+    <string name="close_label">Cerrar</string>
+    <string name="client_label">Cliente</string>
+    <string name="event_label">Evento</string>
+    <string name="case_label">Caso</string>
 </resources>
