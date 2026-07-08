@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
 import com.development.legally.ui.theme.LegallyTheme
+import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 
 private val FigmaBackground = Color(0xFF1C2632)
 private val FigmaGold = Color(0xFF9E8D44)
@@ -37,140 +38,158 @@ private val FigmaStatusBusy = Color(0xFFFF0000)
 
 @Composable
 fun AgendaScreen(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToCases: () -> Unit = {},
+    onNavigateToNewCase: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {}
 ) {
-    Box(
-        modifier = modifier
-            .size(width = 389.dp, height = 879.dp)
-            .background(FigmaBackground)
-    ) {
-        // 2. Usuario Agenda
-        Icon(
-            painter = painterResource(id = R.drawable.boton_usuario_expedientes),
-            contentDescription = null,
-            tint = FigmaGold,
-            modifier = Modifier
-                .offset(x = 17.dp, y = 32.dp)
-                .size(15.dp)
-        )
-
-        // 3. Titulo Agenda del abogado
-        Text(
-            text = "Agenda del abogado",
-            color = Color.White,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .offset(x = 0.dp, y = 33.dp)
-                .width(389.dp)
-                .height(19.dp)
-        )
-
-        // 4. Notificaciones Agenda
+    Scaffold(
+        bottomBar = {
+            LegallyBottomNavigationBar(
+                currentRoute = "agenda",
+                onInicioClick = onNavigateToHome,
+                onExpedientesClick = onNavigateToCases,
+                onCrearClick = onNavigateToNewCase,
+                onAgendaClick = { /* Already here */ },
+                onClientesClick = onNavigateToClients
+            )
+        },
+        containerColor = FigmaBackground
+    ) { paddingValues ->
         Box(
-            modifier = Modifier
-                .offset(x = 354.dp, y = 32.dp)
-                .size(width = 23.dp, height = 19.2.dp),
-            contentAlignment = Alignment.Center
+            modifier = modifier
+                .fillMaxSize()
+                .padding(paddingValues)
         ) {
+            // 2. Usuario Agenda
             Icon(
-                painter = painterResource(id = R.drawable.boton_notificaciones_expedientes),
+                painter = painterResource(id = R.drawable.boton_usuario_expedientes),
                 contentDescription = null,
                 tint = FigmaGold,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        // 5. Barra de busqueda agenda
-        Box(
-            modifier = Modifier
-                .offset(x = 18.dp, y = 67.dp)
-                .size(width = 357.dp, height = 48.dp)
-                .background(FigmaSearchBackground, RoundedCornerShape(44.dp))
-                .border(1.dp, FigmaGold, RoundedCornerShape(44.dp))
-        ) {
-            Text(
-                text = "Buscar",
-                color = Color.White,
-                fontSize = 13.sp,
                 modifier = Modifier
-                    .padding(start = 20.dp)
-                    .align(Alignment.CenterStart)
+                    .offset(x = 17.dp, y = 32.dp)
+                    .size(15.dp)
             )
-            
-            // 5.1 Cancelar Barra de busqueda Agenda
+
+            // 3. Titulo Agenda del abogado
+            Text(
+                text = "Agenda del abogado",
+                color = Color.White,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .offset(x = 0.dp, y = 33.dp)
+                    .fillMaxWidth()
+                    .height(19.dp)
+            )
+
+            // 4. Notificaciones Agenda
             Box(
                 modifier = Modifier
-                    .offset(x = 304.dp, y = 6.dp)
-                    .size(width = 31.dp, height = 36.dp)
-                    .background(FigmaGold)
-                    .clickable { }
-            )
-        }
-
-        // 6. Filtrar por (general)
-        Box(
-            modifier = Modifier
-                .offset(x = 17.dp, y = 124.dp)
-                .size(width = 358.dp, height = 47.dp)
-        ) {
-            Text(
-                text = "Filtrar por",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W900,
-                modifier = Modifier.align(Alignment.TopStart)
-            )
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .offset(x = 354.dp, y = 32.dp)
+                    .size(width = 23.dp, height = 19.2.dp),
+                contentAlignment = Alignment.Center
             ) {
-                FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
-                FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
-                FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
-                FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(id = R.drawable.boton_notificaciones_expedientes),
+                    contentDescription = null,
+                    tint = FigmaGold,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
-        }
 
-        // 7. Ordenar por (general)
-        Box(
-            modifier = Modifier
-                .offset(x = 17.dp, y = 180.dp) // Adjusted slightly to Y180 to fit content below Y172 title
-                .size(width = 358.dp, height = 47.dp)
-        ) {
-            Text(
-                text = "Ordenar por",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W900,
-                modifier = Modifier.align(Alignment.TopStart)
-            )
-            
-            Row(
+            // 5. Barra de busqueda agenda
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.BottomCenter),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .offset(x = 18.dp, y = 67.dp)
+                    .size(width = 357.dp, height = 48.dp)
+                    .background(FigmaSearchBackground, RoundedCornerShape(44.dp))
+                    .border(1.dp, FigmaGold, RoundedCornerShape(44.dp))
             ) {
-                FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
-                FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
-                FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
-                FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
+                Text(
+                    text = "Buscar",
+                    color = Color.White,
+                    fontSize = 13.sp,
+                    modifier = Modifier
+                        .padding(start = 20.dp)
+                        .align(Alignment.CenterStart)
+                )
+                
+                // 5.1 Cancelar Barra de busqueda Agenda
+                Box(
+                    modifier = Modifier
+                        .offset(x = 304.dp, y = 6.dp)
+                        .size(width = 31.dp, height = 36.dp)
+                        .background(FigmaGold)
+                        .clickable { }
+                )
             }
-        }
 
-        // 8. Listado de agenda general
-        Box(
-            modifier = Modifier
-                .offset(x = 15.dp, y = 240.dp) // Adjusted Y for spacing
-                .size(width = 360.dp, height = 591.dp)
-                .background(FigmaSearchBackground)
-        ) {
-            AgendaList()
+            // 6. Filtrar por (general)
+            Box(
+                modifier = Modifier
+                    .offset(x = 17.dp, y = 124.dp)
+                    .size(width = 358.dp, height = 47.dp)
+            ) {
+                Text(
+                    text = "Filtrar por",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W900,
+                    modifier = Modifier.align(Alignment.TopStart)
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
+                    FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
+                    FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
+                    FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
+                }
+            }
+
+            // 7. Ordenar por (general)
+            Box(
+                modifier = Modifier
+                    .offset(x = 17.dp, y = 180.dp) 
+                    .size(width = 358.dp, height = 47.dp)
+            ) {
+                Text(
+                    text = "Ordenar por",
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W900,
+                    modifier = Modifier.align(Alignment.TopStart)
+                )
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
+                    FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
+                    FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
+                    FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
+                }
+            }
+
+            // 8. Listado de agenda general
+            Box(
+                modifier = Modifier
+                    .offset(x = 15.dp, y = 240.dp) 
+                    .size(width = 360.dp, height = 591.dp)
+                    .background(FigmaSearchBackground)
+            ) {
+                AgendaList()
+            }
         }
     }
 }

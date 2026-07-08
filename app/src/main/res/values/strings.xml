@@ -32,4 +32,26 @@
     <string name="client_label">Cliente</string>
     <string name="event_label">Evento</string>
     <string name="case_label">Caso</string>
+
+    <string name="clients_title">Clientes del abogad@</string>
+    <string name="search_clients_hint">Buscar expedientes, clientes o casos&#8230;</string>
+    <string name="filter_by">Filtrar por:</string>
+    <string name="order_by">Orden por:</string>
+    <string name="active_files_prefix">Expedientes activos</string>
+    <string name="urgency_yes">URGENTE: Sí</string>
+    <string name="status_active">Activo</string>
+    <string name="status_resolved">Resuelto</string>
+
+    <string name="new_case_title">Nuevo Caso</string>
+    <string name="cancel">Cancelar</string>
+    <string name="general_info">Información General</string>
+    <string name="case_number_label">NUMERO EXPEDIENTE</string>
+    <string name="process_type_label">TIPO DE PROCESO</string>
+    <string name="case_status_label">ESTADO DEL CASO</string>
+    <string name="case_description_label">DESCRIPCION DEL CASO</string>
+    <string name="char_count">Caracteres: %1$d de %2$d</string>
+    <string name="client_section">Cliente</string>
+    <string name="participant_name">Nombre de participante</string>
+    <string name="id_label">Cédula: %1$s</string>
+    <string name="save_case">Guardar caso</string>
 </resources>

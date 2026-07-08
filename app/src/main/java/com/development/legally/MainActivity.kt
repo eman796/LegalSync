@@ -11,9 +11,12 @@ import com.development.legally.ui.auth.LoginScreen
 import com.development.legally.ui.auth.RegistrationScreen
 import com.development.legally.ui.auth.WelcomeScreen
 import com.development.legally.ui.cases.CasesScreen
+import com.development.legally.ui.cases.NewCaseScreen
 import com.development.legally.ui.home.HomeScreen
 import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
+import com.development.legally.ui.agenda.AgendaScreen
+import com.development.legally.ui.clients.ClientsScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,11 +70,72 @@ fun LegallyApp() {
             HomeScreen(
                 onNavigateToCases = {
                     navController.navigate(Screen.Cases.route)
+                },
+                onNavigateToNewCase = {
+                    navController.navigate(Screen.NewCase.route)
+                },
+                onNavigateToAgenda = {
+                    navController.navigate(Screen.Agenda.route)
+                },
+                onNavigateToClients = {
+                    navController.navigate(Screen.Clients.route)
                 }
             )
         }
         composable(Screen.Cases.route) {
-            CasesScreen()
+            CasesScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route)
+                },
+                onNavigateToNewCase = {
+                    navController.navigate(Screen.NewCase.route)
+                },
+                onNavigateToAgenda = {
+                    navController.navigate(Screen.Agenda.route)
+                },
+                onNavigateToClients = {
+                    navController.navigate(Screen.Clients.route)
+                }
+            )
+        }
+        composable(Screen.Agenda.route) {
+            AgendaScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route)
+                },
+                onNavigateToCases = {
+                    navController.navigate(Screen.Cases.route)
+                },
+                onNavigateToNewCase = {
+                    navController.navigate(Screen.NewCase.route)
+                },
+                onNavigateToClients = {
+                    navController.navigate(Screen.Clients.route)
+                }
+            )
+        }
+        composable(Screen.Clients.route) {
+            ClientsScreen(
+                onNavigateToHome = {
+                    navController.navigate(Screen.Home.route)
+                },
+                onNavigateToCases = {
+                    navController.navigate(Screen.Cases.route)
+                },
+                onNavigateToNewCase = {
+                    navController.navigate(Screen.NewCase.route)
+                },
+                onNavigateToAgenda = {
+                    navController.navigate(Screen.Agenda.route)
+                }
+            )
+        }
+        composable(Screen.NewCase.route) {
+            NewCaseScreen(
+                onBackClick = { navController.popBackStack() },
+                onCancelClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
         }
     }
 }

@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
 import com.development.legally.ui.theme.*
+import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 
-// Exact colors and properties from Figma
 val FigmaBackground = Color(0xFF1C2632)
 val FigmaGold = Color(0xFF9E8D44)
 val FigmaSearchBackground = Color(0xFF171E27)
@@ -36,7 +36,10 @@ val FigmaNavBackground = Color(0xFF171E27)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
-    onNavigateToCases: () -> Unit = {}
+    onNavigateToCases: () -> Unit = {},
+    onNavigateToNewCase: () -> Unit = {},
+    onNavigateToAgenda: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {}
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
 
@@ -44,8 +47,13 @@ fun HomeScreen(
         Scaffold(
             topBar = { HomeTopBar() },
             bottomBar = { 
-                HomeBottomNavigationBar(
-                    onCreateClick = { showNewMenu = true }
+                LegallyBottomNavigationBar(
+                    currentRoute = "home",
+                    onInicioClick = { /* Already here */ },
+                    onExpedientesClick = onNavigateToCases,
+                    onCrearClick = { showNewMenu = true },
+                    onAgendaClick = onNavigateToAgenda,
+                    onClientesClick = onNavigateToClients
                 ) 
             },
             containerColor = FigmaBackground,
@@ -84,7 +92,8 @@ fun HomeScreen(
                             text = "Ver todos",
                             color = FigmaGold,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable { onNavigateToCases() }
                         )
                     }
                 }
@@ -119,7 +128,10 @@ fun HomeScreen(
                 onClose = { showNewMenu = false },
                 onNewClient = { /* Handle */ showNewMenu = false },
                 onNewEvent = { /* Handle */ showNewMenu = false },
-                onNewCase = { /* Handle */ showNewMenu = false }
+                onNewCase = { 
+                    showNewMenu = false
+                    onNavigateToNewCase()
+                }
             )
         }
     }
@@ -411,94 +423,6 @@ fun PendingTaskItem(title: String, subtitle: String, time: String) {
                     modifier = Modifier.size(20.dp)
                 )
             }
-        }
-    }
-}
-
-@Composable
-fun HomeBottomNavigationBar(
-    onCreateClick: () -> Unit = {}
-) {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(95.dp),
-        color = FigmaNavBackground,
-        border = BorderStroke(1.dp, FigmaGold)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            NavItem(R.drawable.boton_inicio_expedientes, "Inicio", isSelected = true)
-            NavItem(R.drawable.boton_expedientes_expedientes, "Expedientes")
-            
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .offset(y = (-15).dp)
-                    .clickable(onClick = onCreateClick)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(60.dp)
-                        .background(FigmaBackground, CircleShape)
-                        .border(2.dp, FigmaGold, CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Crear",
-                        tint = FigmaGold,
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, FigmaGold, RoundedCornerShape(4.dp))
-                        .padding(horizontal = 8.dp, vertical = 2.dp)
-                ) {
-                    Text(text = "Crear", color = FigmaGold, fontSize = 10.sp)
-                }
-            }
-
-            NavItem(R.drawable.boton_agendaexpedientes, "Agenda")
-            NavItem(R.drawable.boton_clientes_expedientes, "Clientes")
-        }
-    }
-}
-
-@Composable
-fun NavItem(icon: Int, label: String, isSelected: Boolean = false) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Icon(
-            painter = painterResource(id = icon),
-            contentDescription = label,
-            tint = FigmaGold,
-            modifier = Modifier.size(28.dp)
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Box(
-            modifier = Modifier
-                .border(
-                    width = 1.dp,
-                    color = if (isSelected) FigmaGold else Color.White.copy(alpha = 0.4f),
-                    shape = RoundedCornerShape(4.dp)
-                )
-                .padding(horizontal = 10.dp, vertical = 2.dp)
-        ) {
-            Text(
-                text = label,
-                color = if (isSelected) FigmaGold else Color.White,
-                fontSize = 10.sp
-            )
         }
     }
 }
