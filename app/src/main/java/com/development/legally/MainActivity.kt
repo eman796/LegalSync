@@ -17,6 +17,7 @@ import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
 import com.development.legally.ui.agenda.AgendaScreen
 import com.development.legally.ui.clients.ClientsScreen
+import com.development.legally.ui.clients.EditClientScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -37,6 +38,18 @@ fun LegallyApp() {
         navController = navController,
         startDestination = Screen.Welcome.route
     ) {
+        composable("edit_client/{clientId}") { backStackEntry ->
+            val clientId = backStackEntry.arguments?.getString("clientId")
+            EditClientScreen(
+                clientId = clientId,
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToCases = { navController.navigate(Screen.Cases.route) },
+                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) }
+            )
+        }
         composable(Screen.Welcome.route) {
             WelcomeScreen(
                 onLoginClick = {
@@ -79,6 +92,9 @@ fun LegallyApp() {
                 },
                 onNavigateToClients = {
                     navController.navigate(Screen.Clients.route)
+                },
+                onNavigateToEditClient = { clientId ->
+                    navController.navigate("edit_client/$clientId")
                 }
             )
         }
@@ -127,6 +143,9 @@ fun LegallyApp() {
                 },
                 onNavigateToAgenda = {
                     navController.navigate(Screen.Agenda.route)
+                },
+                onNavigateToEditClient = { clientId ->
+                    navController.navigate("edit_client/$clientId")
                 }
             )
         }

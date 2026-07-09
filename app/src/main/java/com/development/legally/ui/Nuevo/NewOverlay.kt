@@ -1,4 +1,4 @@
-package com.development.legally.ui.home
+package com.development.legally.ui.Nuevo
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background

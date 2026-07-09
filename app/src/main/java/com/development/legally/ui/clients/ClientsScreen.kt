@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -41,7 +42,8 @@ fun ClientsScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
-    onNavigateToAgenda: () -> Unit = {}
+    onNavigateToAgenda: () -> Unit = {},
+    onNavigateToEditClient: (String) -> Unit = {}
 ) {
     Scaffold(
         bottomBar = {
@@ -51,7 +53,7 @@ fun ClientsScreen(
                 onExpedientesClick = onNavigateToCases,
                 onCrearClick = onNavigateToNewCase,
                 onAgendaClick = onNavigateToAgenda,
-                onClientesClick = { /* Already here */ }
+                onClientesClick = {}
             )
         },
         containerColor = FigmaBackground
@@ -137,25 +139,28 @@ fun ClientsScreen(
             // 8. Listado de Clientes general
             Box(
                 modifier = Modifier
-                    .offset(x = 17.dp, y = 202.dp)
+                    .offset(x = 17.dp, y = 220.dp)
                     .size(width = 360.dp, height = 591.dp)
                     .background(FigmaSearchBackground)
             ) {
+
                 val sampleClients = listOf(
-                    ClientItemData("Juan Perez", "Expedientes activos: 3", "12 Procesos", true),
-                    ClientItemData("Maria Garcia", "Expedientes activos: 1", "5 Procesos", false),
-                    ClientItemData("Carlos Rodriguez", "Expedientes activos: 0", "8 Procesos", true),
-                    ClientItemData("Ana Martinez", "Expedientes activos: 2", "10 Procesos", false),
-                    ClientItemData("Luis Hernandez", "Expedientes activos: 4", "15 Procesos", true),
-                    ClientItemData("Sofia Lopez", "Expedientes activos: 1", "3 Procesos", true),
-                    ClientItemData("Diego Ruiz", "Expedientes activos: 0", "2 Procesos", false)
-                )
-                
+                    ClientItemData("1", "Juan Perez", "Expedientes activos: 3", "12 Procesos", true),
+                    ClientItemData("2", "Maria Garcia", "Expedientes activos: 1", "5 Procesos", false),
+                    ClientItemData("3", "Carlos Rodriguez", "Expedientes activos: 0", "8 Procesos", true),
+                    ClientItemData("4", "Ana Martinez", "Expedientes activos: 2", "10 Procesos", false),
+                    ClientItemData("5", "Luis Hernandez", "Expedientes activos: 4", "15 Procesos", true),
+                    ClientItemData("6", "Sofia Lopez", "Expedientes activos: 1", "3 Procesos", true),
+                    ClientItemData("7", "Diego Ruiz", "Expedientes activos: 0", "2 Procesos", false))
+
                 LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(sampleClients) { client ->
-                        ClientListItem(client)
+                        ClientListItem(
+                            data = client,
+                            onEditClick = { onNavigateToEditClient(client.id) }
+                        )
                     }
                 }
             }
@@ -170,7 +175,7 @@ private fun SectionHeader(
 ) {
     Box(
         modifier = modifier
-            .size(width = 358.dp, height = 43.dp)
+            .size(width = 358.dp, height = 50.dp)
     ) {
         Text(
             text = title,
@@ -222,7 +227,7 @@ private fun FilterButton(
                 painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
                 contentDescription = null,
                 tint = Color.White,
-                modifier = Modifier.size(12.dp)
+                modifier = Modifier.size(12.dp).rotate(90f)
             )
         }
     }
@@ -231,12 +236,13 @@ private fun FilterButton(
 @Composable
 private fun ClientListItem(
     data: ClientItemData,
+    onEditClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(46.dp)
+            .height(50.dp)
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
                 drawLine(
@@ -289,7 +295,7 @@ private fun ClientListItem(
                 .size(width = 328.6.dp, height = 8.dp),
             maxLines = 1
         )
-        
+
         // 8.5 Etiqueta de actividad
         Box(
             modifier = Modifier
@@ -313,16 +319,18 @@ private fun ClientListItem(
         // 8.6 Ir a
         Icon(
             painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
-            contentDescription = null,
+            contentDescription = "Editar Cliente",
             tint = FigmaGold,
             modifier = Modifier
                 .offset(x = 342.2.dp, y = 14.46.dp)
                 .size(width = 8.49.dp, height = 17.07.dp)
+                .clickable { onEditClick() }
         )
     }
 }
 
 private data class ClientItemData(
+    val id: String,
     val name: String,
     val activeFiles: String,
     val processCount: String,

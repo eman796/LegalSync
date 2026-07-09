@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +24,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
+import com.development.legally.ui.Nuevo.NewOverlay
 import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 
@@ -39,7 +39,8 @@ fun HomeScreen(
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
-    onNavigateToClients: () -> Unit = {}
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToEditClient: (String) -> Unit = {}
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
 
@@ -128,7 +129,7 @@ fun HomeScreen(
                 onClose = { showNewMenu = false },
                 onNewClient = { /* Handle */ showNewMenu = false },
                 onNewEvent = { /* Handle */ showNewMenu = false },
-                onNewCase = { 
+                onNewCase = {
                     showNewMenu = false
                     onNavigateToNewCase()
                 }

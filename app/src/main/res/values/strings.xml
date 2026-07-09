@@ -54,4 +54,19 @@
     <string name="participant_name">Nombre de participante</string>
     <string name="id_label">Cédula: %1$s</string>
     <string name="save_case">Guardar caso</string>
+
+    <string name="edit_client_title">Editar Cliente</string>
+    <string name="duplicate">Duplicar</string>
+    <string name="client_name_label">Nombre del cliente</string>
+    <string name="person_type_label">Tipo de persona</string>
+    <string name="identity_label">Identidad</string>
+    <string name="birth_date_label">Fecha de nacimiento</string>
+    <string name="nationality_label">Nacionalidad</string>
+    <string name="contact_section">Contacto</string>
+    <string name="email_label">Correo</string>
+    <string name="phone_label">Teléfono</string>
+    <string name="document_number_label">Numero de documento</string>
+    <string name="client_description_label">Descripción del cliente</string>
+    <string name="save_client">Guardar Cliente</string>
+    <string name="delete_case">Eliminar caso</string>
 </resources>
