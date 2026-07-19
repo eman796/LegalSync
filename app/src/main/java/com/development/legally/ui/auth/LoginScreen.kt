@@ -23,13 +23,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeJoin
@@ -37,26 +38,41 @@ import androidx.compose.ui.graphics.asComposePath
 import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.PathParser
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
 import com.development.legally.ui.theme.LegallyTheme
+
 
 @Composable
 fun LoginScreen(
     onLoginSuccess: () -> Unit = {},
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    loginViewModel: LoginViewModel = viewModel()
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf("") }
+    val loginState by loginViewModel.loginState.collectAsState()
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is LoginViewModel.LoginState.Success -> {
+                onLoginSuccess()
+                loginViewModel.resetState()
+            }
+            is LoginViewModel.LoginState.Error -> {
+                errorMessage = (loginState as LoginViewModel.LoginState.Error).message
+            }
+            else -> {}
+        }
+    }
+
 
     val backgroundColor = Color(red = 0.10980392f, green = 0.14901961f, blue = 0.19607843f, alpha = 1f)
     val goldColor = Color(red = 0.61960787f, green = 0.5529412f, blue = 0.26666668f, alpha = 1f)
@@ -192,7 +208,7 @@ fun LoginScreen(
 
             // Login Button
             Button(
-                onClick = onLoginSuccess,
+                onClick = { loginViewModel.login(username, password) },
                 modifier = Modifier
                     .width(338.dp)
                     .height(60.dp)
