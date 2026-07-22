@@ -13,6 +13,8 @@ import com.development.legally.ui.auth.WelcomeScreen
 import com.development.legally.ui.cases.CasesScreen
 import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
+import com.development.legally.data.repository.AuthRepository
+import androidx.compose.runtime.remember
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,13 +27,21 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+
 @Composable
 fun LegallyApp() {
+
+    val authRepository = remember { AuthRepository() }
+    val startDestination = if (authRepository.isLoggedIn()) {
+        Screen.Cases.route
+    } else {
+        Screen.Welcome.route
+    }
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Welcome.route
+        startDestination = startDestination
     ) {
         composable(Screen.Welcome.route) {
             WelcomeScreen(
