@@ -9,4 +9,64 @@
     <string name="registration_form_title">Formulario Registro</string>
     <string name="full_name_placeholder">Nombre completo</string>
     <string name="request_registration">Solicitar Registro</string>
+
+    <string name="search_hint">Buscar</string>
+    <string name="what_is_for_today">Que hay para hoy?</string>
+    <string name="active_files">Expedientes\nActivos</string>
+    <string name="hearings">Audiencias</string>
+    <string name="upcoming_commitments">Compromisos\nPróximamente</string>
+    <string name="pending_tasks">Tareas\nPendientes</string>
+    <string name="what_follows_now">Que sigue ahora?</string>
+    <string name="most_recent_cases">Casos mas recientes</string>
+    <string name="view_all">Ver todos</string>
+    <string name="pending_header">Pendientes:</string>
+    <string name="nav_home">Inicio</string>
+    <string name="nav_files">Expedientes</string>
+    <string name="nav_create">Crear</string>
+    <string name="nav_agenda">Agenda</string>
+    <string name="nav_clients">Clientes</string>
+    <string name="for_today">Para: hoy</string>
+
+    <string name="new_label">Nuevo</string>
+    <string name="close_label">Cerrar</string>
+    <string name="client_label">Cliente</string>
+    <string name="event_label">Evento</string>
+    <string name="case_label">Caso</string>
+
+    <string name="clients_title">Clientes del abogad@</string>
+    <string name="search_clients_hint">Buscar expedientes, clientes o casos&#8230;</string>
+    <string name="filter_by">Filtrar por:</string>
+    <string name="order_by">Orden por:</string>
+    <string name="active_files_prefix">Expedientes activos</string>
+    <string name="urgency_yes">URGENTE: Sí</string>
+    <string name="status_active">Activo</string>
+    <string name="status_resolved">Resuelto</string>
+
+    <string name="new_case_title">Nuevo Caso</string>
+    <string name="cancel">Cancelar</string>
+    <string name="general_info">Información General</string>
+    <string name="case_number_label">NUMERO EXPEDIENTE</string>
+    <string name="process_type_label">TIPO DE PROCESO</string>
+    <string name="case_status_label">ESTADO DEL CASO</string>
+    <string name="case_description_label">DESCRIPCION DEL CASO</string>
+    <string name="char_count">Caracteres: %1$d de %2$d</string>
+    <string name="client_section">Cliente</string>
+    <string name="participant_name">Nombre de participante</string>
+    <string name="id_label">Cédula: %1$s</string>
+    <string name="save_case">Guardar caso</string>
+
+    <string name="edit_client_title">Editar Cliente</string>
+    <string name="duplicate">Duplicar</string>
+    <string name="client_name_label">Nombre del cliente</string>
+    <string name="person_type_label">Tipo de persona</string>
+    <string name="identity_label">Identidad</string>
+    <string name="birth_date_label">Fecha de nacimiento</string>
+    <string name="nationality_label">Nacionalidad</string>
+    <string name="contact_section">Contacto</string>
+    <string name="email_label">Correo</string>
+    <string name="phone_label">Teléfono</string>
+    <string name="document_number_label">Numero de documento</string>
+    <string name="client_description_label">Descripción del cliente</string>
+    <string name="save_client">Guardar Cliente</string>
+    <string name="delete_case">Eliminar caso</string>
 </resources>

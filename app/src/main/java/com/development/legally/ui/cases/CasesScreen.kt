@@ -17,11 +17,26 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
 import com.development.legally.ui.theme.*
+import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 
 @Composable
-fun CasesScreen() {
+fun CasesScreen(
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToNewCase: () -> Unit = {},
+    onNavigateToAgenda: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {}
+) {
     Scaffold(
-        bottomBar = { BottomNavigationBar() },
+        bottomBar = { 
+            LegallyBottomNavigationBar(
+                currentRoute = "cases",
+                onInicioClick = onNavigateToHome,
+                onExpedientesClick = { /* Already here */ },
+                onCrearClick = onNavigateToNewCase,
+                onAgendaClick = onNavigateToAgenda,
+                onClientesClick = onNavigateToClients
+            )
+        },
         containerColor = CaseBackground
     ) { paddingValues ->
         Column(
@@ -113,40 +128,6 @@ fun CaseItem(caseNumber: String) {
                         .align(Alignment.End)
                         .padding(top = 12.dp)
                 )
-            }
-        }
-    }
-}
-
-@Composable
-fun BottomNavigationBar() {
-    Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(70.dp),
-        color = NavBackground
-    ) {
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            val icons = listOf(
-                R.drawable.boton_inicio_expedientes,
-                R.drawable.boton_expedientes_expedientes,
-                R.drawable.boton_crear_expedientes,
-                R.drawable.boton_agendaexpedientes,
-                R.drawable.boton_clientes_expedientes
-            )
-
-            icons.forEach { icon ->
-                IconButton(onClick = { /* TODO */ }) {
-                    Icon(
-                        painter = painterResource(id = icon),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                }
             }
         }
     }
