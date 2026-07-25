@@ -26,9 +26,8 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // IMPORTANTE: Navegamos a casesFragment que es donde está tu diseño
         binding.btnLogin.setOnClickListener {
-            findNavController().navigate(R.id.action_login_to_cases)
+            findNavController().navigate(R.id.action_login_to_home)
         }
     }
 
