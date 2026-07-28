@@ -67,8 +67,6 @@ fun EditClientScreen(
                     email = it.email
                     phone = it.phone
                     description = it.description
-                    // Assuming documentNumber might be lastName or stored elsewhere, 
-                    // for now we'll use lastName as a placeholder for the second name/id
                     documentNumber = it.lastName 
                 }
             }
@@ -113,7 +111,7 @@ fun EditClientScreen(
                 val client = Client(
                     id = if (clientId == "new" || clientId == null) "" else clientId,
                     name = name,
-                    lastName = documentNumber, // Using lastName for document number per current model
+                    lastName = documentNumber,
                     personType = personType,
                     birthDate = birthDate,
                     nationality = nationality,
@@ -168,6 +166,7 @@ private fun EditClientContent(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .imePadding() // Añadido para que el teclado empuje el contenido
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {

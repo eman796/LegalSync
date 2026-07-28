@@ -3,8 +3,12 @@ package com.development.legally
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -24,9 +28,12 @@ import com.development.legally.ui.theme.LegallyTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContent {
             LegallyTheme {
-                LegallyApp()
+                Surface(modifier = Modifier.fillMaxSize()) {
+                    LegallyApp()
+                }
             }
         }
     }
@@ -34,7 +41,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun LegallyApp() {
-
     val authRepository = remember { AuthRepository() }
     val startDestination = if (authRepository.isLoggedIn()) {
         Screen.Home.route
@@ -61,12 +67,8 @@ fun LegallyApp() {
         }
         composable(Screen.Welcome.route) {
             WelcomeScreen(
-                onLoginClick = {
-                    navController.navigate(Screen.Login.route)
-                },
-                onSignupClick = {
-                    navController.navigate(Screen.Registration.route)
-                }
+                onLoginClick = { navController.navigate(Screen.Login.route) },
+                onSignupClick = { navController.navigate(Screen.Registration.route) }
             )
         }
         composable(Screen.Login.route) {
@@ -75,87 +77,47 @@ fun LegallyApp() {
                     navController.navigate(Screen.Home.route) {
                         popUpTo(Screen.Login.route) { inclusive = true }
                     }
-                }
+                },
+                onBackClick = { navController.popBackStack() }
             )
         }
         composable(Screen.Registration.route) {
             RegistrationScreen(
-                onBackClick = {
-                    navController.popBackStack()
-                },
-                onRequestRegistration = { _, _ ->
-                    navController.popBackStack()
-                }
+                onBackClick = { navController.popBackStack() }
             )
         }
         composable(Screen.Home.route) {
             HomeScreen(
-                onNavigateToCases = {
-                    navController.navigate(Screen.Cases.route)
-                },
-                onNavigateToNewCase = {
-                    navController.navigate(Screen.NewCase.route)
-                },
-                onNavigateToAgenda = {
-                    navController.navigate(Screen.Agenda.route)
-                },
-                onNavigateToClients = {
-                    navController.navigate(Screen.Clients.route)
-                },
-                onNavigateToEditClient = { clientId ->
-                    navController.navigate("edit_client/$clientId")
-                }
+                onNavigateToCases = { navController.navigate(Screen.Cases.route) },
+                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) },
+                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
             )
         }
         composable(Screen.Cases.route) {
             CasesScreen(
-                onNavigateToHome = {
-                    navController.navigate(Screen.Home.route)
-                },
-                onNavigateToNewCase = {
-                    navController.navigate(Screen.NewCase.route)
-                },
-                onNavigateToAgenda = {
-                    navController.navigate(Screen.Agenda.route)
-                },
-                onNavigateToClients = {
-                    navController.navigate(Screen.Clients.route)
-                }
+                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) }
             )
         }
         composable(Screen.Agenda.route) {
             AgendaScreen(
-                onNavigateToHome = {
-                    navController.navigate(Screen.Home.route)
-                },
-                onNavigateToCases = {
-                    navController.navigate(Screen.Cases.route)
-                },
-                onNavigateToNewCase = {
-                    navController.navigate(Screen.NewCase.route)
-                },
-                onNavigateToClients = {
-                    navController.navigate(Screen.Clients.route)
-                }
+                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToCases = { navController.navigate(Screen.Cases.route) },
+                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) }
             )
         }
         composable(Screen.Clients.route) {
             ClientsScreen(
-                onNavigateToHome = {
-                    navController.navigate(Screen.Home.route)
-                },
-                onNavigateToCases = {
-                    navController.navigate(Screen.Cases.route)
-                },
-                onNavigateToNewCase = {
-                    navController.navigate(Screen.NewCase.route)
-                },
-                onNavigateToAgenda = {
-                    navController.navigate(Screen.Agenda.route)
-                },
-                onNavigateToEditClient = { clientId ->
-                    navController.navigate("edit_client/$clientId")
-                }
+                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToCases = { navController.navigate(Screen.Cases.route) },
+                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
+                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
             )
         }
         composable(Screen.NewCase.route) {
