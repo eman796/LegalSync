@@ -39,7 +39,9 @@ fun HomeScreen(
     onNavigateToNewCase: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
-    onNavigateToEditClient: (String) -> Unit = {}
+    onNavigateToEditClient: (String) -> Unit = {},
+    onNavigateToEditCase: (String) -> Unit = {},
+    onNavigateToEditEvent: (String) -> Unit = {}
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
 
@@ -85,8 +87,10 @@ fun HomeScreen(
                 
                 item { SectionHeader(title = "¿Qué hay para hoy?") }
                 
-                // TARJETA DE PRÓXIMO EVENTO ACTUALIZADA
-                item { NextEventCard() }
+                // 1. SOLUCIÓN BUG CALENDARIO
+                item { 
+                    NextEventCard(onClick = { onNavigateToEditEvent("event_id_123") }) 
+                }
 
                 item { 
                     Text(
@@ -98,25 +102,58 @@ fun HomeScreen(
                     )
                 }
 
-                item { StatsRow() }
+                // 2. SOLUCIÓN BUG TARJETAS
+                item { 
+                    StatsRow(
+                        onNavigateToCases = onNavigateToCases,
+                        onNavigateToAgenda = onNavigateToAgenda
+                    ) 
+                }
                 
+                // MÓDULO: CASOS MAS RECIENTES (3 elementos)
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = "Casos más recientes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                        Text(
-                            text = "Ver todos", 
-                            color = FigmaGold, 
-                            fontSize = 14.sp, 
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.clickable { onNavigateToCases() }
-                        )
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "Casos mas recientes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Ver más", 
+                                color = FigmaGold, 
+                                fontSize = 14.sp, 
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.clickable { onNavigateToCases() }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        RecentCasesList(onCaseClick = onNavigateToEditCase)
                     }
                 }
-                item { RecentCasesList() }
+
+                // MÓDULO: TAREAS PENDIENTES (3 elementos)
+                item {
+                    Column {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = "Tareas pendientes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Ver todo", 
+                                color = FigmaGold, 
+                                fontSize = 14.sp, 
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.clickable { onNavigateToAgenda() }
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        PendingTasksList(onTaskClick = { onNavigateToEditCase("case_id_linked") })
+                    }
+                }
+                
                 item { Spacer(modifier = Modifier.height(100.dp)) }
             }
         }
@@ -136,174 +173,64 @@ fun HomeScreen(
 }
 
 @Composable
-fun NextEventCard() {
+fun NextEventCard(onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .border(1.dp, FigmaGold, RoundedCornerShape(12.dp)),
+            .border(1.dp, FigmaGold, RoundedCornerShape(12.dp))
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Sección Fecha
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(95.dp)
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(95.dp)) {
                 Text(text = "Mayo de 2026", color = Color.White, fontSize = 12.sp)
                 Text(text = "Martes", color = Color.White, fontSize = 15.sp)
                 Text(text = "20", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
             }
-
-            // Línea divisoria blanca
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .height(80.dp)
-                    .background(Color.White.copy(alpha = 0.5f))
-            )
-
-            // Detalles del Evento
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 12.dp)
-            ) {
+            Box(modifier = Modifier.width(1.dp).height(80.dp).background(Color.White.copy(alpha = 0.5f)))
+            Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
                 Text(text = "hh:mm:a/p", color = Color.White, fontSize = 14.sp)
-                Text(
-                    text = "Lorem Ipsum", 
-                    color = Color.White, 
-                    fontSize = 18.sp, 
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Text(text = "Lorem Ipsum", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(text = "Caso numero Lorem Ipsum", color = Color.White, fontSize = 14.sp)
-                
                 Spacer(modifier = Modifier.height(4.dp))
-                
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_location_pin),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(14.dp)
-                    )
+                    Icon(painter = painterResource(id = R.drawable.ic_location_pin), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "HEARTBREAK AVENUE, TWICELAND", 
-                        color = Color.White, 
-                        fontSize = 10.sp,
-                        maxLines = 1
-                    )
+                    Text(text = "HEARTBREAK AVENUE, TWICELAND", color = Color.White, fontSize = 10.sp, maxLines = 1)
                 }
             }
-
-            // Etiqueta y Flecha
-            Column(
-                horizontalAlignment = Alignment.End,
-                verticalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.height(80.dp)
-            ) {
-                // Etiqueta con borde punteado (Dashed)
-                Box(
-                    modifier = Modifier
-                        .drawBehind {
-                            drawRoundRect(
-                                color = Color(0xFF9E8D44),
-                                style = Stroke(
-                                    width = 2f,
-                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                                ),
-                                cornerRadius = CornerRadius(8.dp.toPx())
-                            )
-                        }
-                        .padding(horizontal = 10.dp, vertical = 4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
+            Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.height(80.dp)) {
+                Box(modifier = Modifier.drawBehind { drawRoundRect(color = Color(0xFF9E8D44), style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)), cornerRadius = CornerRadius(8.dp.toPx())) }.padding(horizontal = 10.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
                     Text(text = "Audiencia", color = Color.White, fontSize = 11.sp)
                 }
-
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_right_gold),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(24.dp)
-                )
+                Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
             }
         }
     }
 }
 
 @Composable
-fun StatsRow() {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        StatCard(
-            modifier = Modifier.weight(1f), 
-            count = "+1k", 
-            labelLines = listOf("Expedien", "tes", "Activos"),
-            icon = painterResource(id = R.drawable.ic_card_folder_figma)
-        )
-        StatCard(
-            modifier = Modifier.weight(1f), 
-            count = "X", 
-            labelLines = listOf("Audien", "cias", "Para: hoy"),
-            icon = painterResource(id = R.drawable.ic_card_calendar_figma)
-        )
-        StatCard(
-            modifier = Modifier.weight(1f), 
-            count = "+1k", 
-            labelLines = listOf("Compromi", "sos", "Próximamente"),
-            icon = painterResource(id = R.drawable.ic_card_clock_figma)
-        )
-        StatCard(
-            modifier = Modifier.weight(1f), 
-            count = "+1k", 
-            labelLines = listOf("Tareas", "Pendientes"),
-            icon = painterResource(id = R.drawable.ic_card_tasks_figma)
-        )
+fun StatsRow(onNavigateToCases: () -> Unit, onNavigateToAgenda: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        StatCard(modifier = Modifier.weight(1f), count = "+1k", labelLines = listOf("Expedien", "tes", "Activos"), icon = painterResource(id = R.drawable.ic_card_folder_figma), onClick = onNavigateToCases)
+        StatCard(modifier = Modifier.weight(1f), count = "X", labelLines = listOf("Audien", "cias", "Para: hoy"), icon = painterResource(id = R.drawable.ic_card_calendar_figma), onClick = onNavigateToAgenda)
+        StatCard(modifier = Modifier.weight(1f), count = "+1k", labelLines = listOf("Compromi", "sos", "Próximamente"), icon = painterResource(id = R.drawable.ic_card_clock_figma), onClick = onNavigateToAgenda)
+        StatCard(modifier = Modifier.weight(1f), count = "+1k", labelLines = listOf("Tareas", "Pendientes"), icon = painterResource(id = R.drawable.ic_card_tasks_figma), onClick = onNavigateToCases)
     }
 }
 
 @Composable
-fun StatCard(
-    modifier: Modifier = Modifier, 
-    count: String, 
-    labelLines: List<String>, 
-    icon: Painter
-) {
-    Card(
-        modifier = modifier.height(210.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27)),
-        border = BorderStroke(1.dp, FigmaGold)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            Icon(
-                painter = icon,
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(75.dp).padding(top = 4.dp)
-            )
+fun StatCard(modifier: Modifier = Modifier, count: String, labelLines: List<String>, icon: Painter, onClick: () -> Unit = {}) {
+    Card(modifier = modifier.height(210.dp).clickable { onClick() }, shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27)), border = BorderStroke(1.dp, FigmaGold)) {
+        Column(modifier = Modifier.fillMaxSize().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.SpaceBetween) {
+            Icon(painter = icon, contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(75.dp).padding(top = 4.dp))
             Text(text = count, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                labelLines.forEach { line ->
-                    Text(text = line, color = Color.White, fontSize = 12.sp, textAlign = TextAlign.Center, lineHeight = 14.sp, fontWeight = FontWeight.Bold)
-                }
+                labelLines.forEach { line -> Text(text = line, color = Color.White, fontSize = 12.sp, textAlign = TextAlign.Center, lineHeight = 14.sp, fontWeight = FontWeight.Bold) }
             }
             Spacer(modifier = Modifier.height(4.dp))
         }
@@ -311,21 +238,57 @@ fun StatCard(
 }
 
 @Composable
-fun RecentCasesList() {
+fun RecentCasesList(onCaseClick: (String) -> Unit) {
+    val cases = listOf("25-000044-033-PE", "20-000115-1218-PE", "25-002920-0175-PE")
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        RecentCaseItem("25-000044-033-PE", "Hoy")
-        RecentCaseItem("20-000115-1218-PE", "Ayer")
+        cases.forEach { id ->
+            RecentCaseItem(id = id, onClick = { onCaseClick(id) })
+            HorizontalDivider(color = Color.White.copy(alpha = 0.1f), thickness = 1.dp)
+        }
     }
 }
 
 @Composable
-fun RecentCaseItem(id: String, update: String) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(modifier = Modifier.size(42.dp).background(Color.Gray.copy(alpha = 0.4f), RoundedCornerShape(4.dp)))
+fun RecentCaseItem(id: String, onClick: () -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.size(42.dp).background(FigmaGold.copy(alpha = 0.1f), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
+            Icon(painter = painterResource(id = R.drawable.ic_gavel), contentDescription = null, tint = FigmaGold, modifier = Modifier.size(24.dp))
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(text = id, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Actualizado: $update", color = Color.Gray, fontSize = 10.sp)
+            Text(text = "Christian Bullgarelli vs Federico cruz", color = Color.Gray, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        Text(text = "Hoy", color = Color.Gray, fontSize = 10.sp)
+    }
+}
+
+@Composable
+fun PendingTasksList(onTaskClick: () -> Unit) {
+    val tasks = listOf("Reunión con Jose Miguel Villalobos", "Reunión con Juan Diego Castro", "Reunión con Francisco Dall'Anese")
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        tasks.forEach { title ->
+            PendingTaskItem(title = title, onClick = onTaskClick)
+        }
+    }
+}
+
+@Composable
+fun PendingTaskItem(title: String, onClick: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().border(1.dp, FigmaGold, RoundedCornerShape(8.dp)).clickable { onClick() }, shape = RoundedCornerShape(8.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))) {
+        Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Icon(painter = painterResource(id = R.drawable.ic_task_check_hollow), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(28.dp).clickable { })
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(text = title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(text = "Caso 25-000044-033-PE", color = Color.White, fontSize = 12.sp)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(painter = painterResource(id = R.drawable.ic_task_calendar_white), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(20.dp))
+                Text(text = "11:00", color = Color.White, fontSize = 10.sp)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(20.dp))
         }
     }
 }

@@ -60,6 +60,17 @@ fun LegallyApp() {
         navController = navController,
         startDestination = startDestination
     ) {
+        // Pantalla genérica para edición (Placeholder)
+        composable("edit_case/{caseId}") { 
+            // Por ahora redirigimos a la lista de expedientes hasta que crees la pantalla de edición
+            CasesScreen(onLogout = onLogout, onNavigateToHome = { navController.navigate(Screen.Home.route) }) 
+        }
+
+        composable("edit_event/{eventId}") {
+            // Por ahora redirigimos a la Agenda
+            AgendaScreen(onLogout = onLogout, onNavigateToHome = { navController.navigate(Screen.Home.route) })
+        }
+
         composable("edit_client/{clientId}") { backStackEntry ->
             val clientId = backStackEntry.arguments?.getString("clientId")
             EditClientScreen(
@@ -100,7 +111,9 @@ fun LegallyApp() {
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
-                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
+                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") },
+                onNavigateToEditCase = { caseId -> navController.navigate("edit_case/$caseId") },
+                onNavigateToEditEvent = { eventId -> navController.navigate("edit_event/$eventId") }
             )
         }
         composable(Screen.Cases.route) {
