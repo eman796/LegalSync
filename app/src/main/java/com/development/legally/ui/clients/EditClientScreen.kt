@@ -47,13 +47,15 @@ fun EditClientScreen(
     var name by remember { mutableStateOf("") }
     var lastName by remember { mutableStateOf("") }
     var personType by remember { mutableStateOf("Física") }
-    var identityType by remember { mutableStateOf("Cédula") }
-    var birthDate by remember { mutableStateOf("") }
     var nationality by remember { mutableStateOf("") }
+    var birthDate by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
-    var documentNumber by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var showErrorDialog by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf("") }
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(clientId) {
         if (clientId != null && clientId != "new" && clientId.isNotEmpty()) {
@@ -61,16 +63,29 @@ fun EditClientScreen(
                 client?.let {
                     name = it.name
                     lastName = it.lastName
-                    personType = it.personType
+                    personType = it.personType.ifEmpty { "Física" }
                     birthDate = it.birthDate
                     nationality = it.nationality
                     email = it.email
                     phone = it.phone
+                    address = it.address
                     description = it.description
-                    documentNumber = it.lastName 
                 }
             }
         }
+    }
+
+    if (showErrorDialog) {
+        AlertDialog(
+            onDismissRequest = { showErrorDialog = false },
+            title = { Text("Error") },
+            text = { Text(errorMessage) },
+            confirmButton = {
+                Button(onClick = { showErrorDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -90,10 +105,10 @@ fun EditClientScreen(
             modifier = modifier.padding(paddingValues),
             name = name,
             onNameChange = { name = it },
+            lastName = lastName,
+            onLastNameChange = { lastName = it },
             personType = personType,
             onPersonTypeChange = { personType = it },
-            identityType = identityType,
-            onIdentityTypeChange = { identityType = it },
             birthDate = birthDate,
             onBirthDateChange = { birthDate = it },
             nationality = nationality,
@@ -102,33 +117,66 @@ fun EditClientScreen(
             onEmailChange = { email = it },
             phone = phone,
             onPhoneChange = { phone = it },
-            documentNumber = documentNumber,
-            onDocumentNumberChange = { documentNumber = it },
+            address = address,
+            onAddressChange = { address = it },
             description = description,
             onDescriptionChange = { description = it },
             onNavigateBack = onNavigateBack,
+            isLoading = isLoading,
             onSaveClick = {
-                val client = Client(
-                    id = if (clientId == "new" || clientId == null) "" else clientId,
-                    name = name,
-                    lastName = documentNumber,
-                    personType = personType,
-                    birthDate = birthDate,
-                    nationality = nationality,
-                    email = email,
-                    phone = phone,
-                    description = description
-                )
-                if (clientId == null || clientId == "new") {
-                    viewModel.createClient(client) { success, _ -> if (success) onNavigateBack() }
+                if (validateFields(name, lastName, email)) {
+                    isLoading = true
+                    val client = Client(
+                        id = if (clientId == "new" || clientId == null) "" else clientId ?: "",
+                        name = name,
+                        lastName = lastName,
+                        personType = personType,
+                        birthDate = birthDate,
+                        nationality = nationality,
+                        email = email,
+                        phone = phone,
+                        address = address,
+                        description = description
+                    )
+                    if (clientId == null || clientId == "new") {
+                        viewModel.createClient(client) { success, error ->
+                            isLoading = false
+                            if (success) {
+                                onNavigateBack()
+                            } else {
+                                errorMessage = error ?: "Error al crear cliente"
+                                showErrorDialog = true
+                            }
+                        }
+                    } else {
+                        viewModel.updateClient(client) { success, error ->
+                            isLoading = false
+                            if (success) {
+                                onNavigateBack()
+                            } else {
+                                errorMessage = error ?: "Error al actualizar cliente"
+                                showErrorDialog = true
+                            }
+                        }
+                    }
                 } else {
-                    viewModel.updateClient(client) { success, _ -> if (success) onNavigateBack() }
+                    errorMessage = "Por favor completa todos los campos obligatorios"
+                    showErrorDialog = true
                 }
             },
             onDeleteClick = {
                 clientId?.let {
                     if (it != "new") {
-                        viewModel.deleteClient(it) { success, _ -> if (success) onNavigateBack() }
+                        isLoading = true
+                        viewModel.deleteClient(it) { success, error ->
+                            isLoading = false
+                            if (success) {
+                                onNavigateBack()
+                            } else {
+                                errorMessage = error ?: "Error al eliminar cliente"
+                                showErrorDialog = true
+                            }
+                        }
                     }
                 }
             }
@@ -136,15 +184,19 @@ fun EditClientScreen(
     }
 }
 
+private fun validateFields(name: String, lastName: String, email: String): Boolean {
+    return name.isNotBlank() && lastName.isNotBlank() && email.isNotBlank()
+}
+
 @Composable
 private fun EditClientContent(
     modifier: Modifier = Modifier,
     name: String = "",
     onNameChange: (String) -> Unit = {},
-    personType: String = "",
+    lastName: String = "",
+    onLastNameChange: (String) -> Unit = {},
+    personType: String = "Física",
     onPersonTypeChange: (String) -> Unit = {},
-    identityType: String = "",
-    onIdentityTypeChange: (String) -> Unit = {},
     birthDate: String = "",
     onBirthDateChange: (String) -> Unit = {},
     nationality: String = "",
@@ -153,26 +205,24 @@ private fun EditClientContent(
     onEmailChange: (String) -> Unit = {},
     phone: String = "",
     onPhoneChange: (String) -> Unit = {},
-    documentNumber: String = "",
-    onDocumentNumberChange: (String) -> Unit = {},
+    address: String = "",
+    onAddressChange: (String) -> Unit = {},
     description: String = "",
     onDescriptionChange: (String) -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    onDuplicateClick: () -> Unit = {},
-    onCancelClick: () -> Unit = {},
+    isLoading: Boolean = false,
     onSaveClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {}
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .imePadding() // Añadido para que el teclado empuje el contenido
+            .imePadding()
             .padding(horizontal = 16.dp)
             .verticalScroll(rememberScrollState())
     ) {
         Spacer(modifier = Modifier.height(16.dp))
         
-        // Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -187,32 +237,16 @@ private fun EditClientContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = stringResource(id = R.string.edit_client_title),
+                text = "Información del Cliente",
                 color = Color.White,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.weight(1f)
             )
-            Text(
-                text = stringResource(id = R.string.duplicate),
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onDuplicateClick() }
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = stringResource(id = R.string.cancel),
-                color = FigmaGold,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.clickable { onCancelClick() }
-            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // General Info Section
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 painter = painterResource(id = R.drawable.boton_expedientes_expedientes),
@@ -222,7 +256,7 @@ private fun EditClientContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = stringResource(id = R.string.general_info),
+                text = "Información General",
                 color = Color.White,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
@@ -231,30 +265,19 @@ private fun EditClientContent(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        InputField(
-            label = stringResource(id = R.string.client_name_label),
-            value = name,
-            onValueChange = onNameChange,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
         Row(modifier = Modifier.fillMaxWidth()) {
             InputField(
-                label = stringResource(id = R.string.person_type_label),
-                value = personType,
-                onValueChange = onPersonTypeChange,
-                modifier = Modifier.weight(1f),
-                isDropdown = true
+                label = "Nombre *",
+                value = name,
+                onValueChange = onNameChange,
+                modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             InputField(
-                label = stringResource(id = R.string.identity_label),
-                value = identityType,
-                onValueChange = onIdentityTypeChange,
-                modifier = Modifier.weight(1f),
-                isDropdown = true
+                label = "Apellido *",
+                value = lastName,
+                onValueChange = onLastNameChange,
+                modifier = Modifier.weight(1f)
             )
         }
 
@@ -262,15 +285,15 @@ private fun EditClientContent(
 
         Row(modifier = Modifier.fillMaxWidth()) {
             InputField(
-                label = stringResource(id = R.string.birth_date_label),
-                value = birthDate,
-                onValueChange = onBirthDateChange,
+                label = "Tipo de Persona",
+                value = personType,
+                onValueChange = onPersonTypeChange,
                 modifier = Modifier.weight(1f),
                 isDropdown = true
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             InputField(
-                label = stringResource(id = R.string.nationality_label),
+                label = "Nacionalidad",
                 value = nationality,
                 onValueChange = onNationalityChange,
                 modifier = Modifier.weight(1f),
@@ -278,19 +301,29 @@ private fun EditClientContent(
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        InputField(
+            label = "Fecha de Nacimiento",
+            value = birthDate,
+            onValueChange = onBirthDateChange,
+            modifier = Modifier.fillMaxWidth(),
+            isDropdown = true
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = stringResource(id = R.string.contact_section),
+            text = "Información de Contacto",
             color = Color.White,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         InputField(
-            label = stringResource(id = R.string.email_label),
+            label = "Email *",
             value = email,
             onValueChange = onEmailChange,
             leadingIcon = {
@@ -308,7 +341,7 @@ private fun EditClientContent(
 
         Row(modifier = Modifier.fillMaxWidth()) {
             InputField(
-                label = stringResource(id = R.string.phone_label),
+                label = "Teléfono",
                 value = phone,
                 onValueChange = onPhoneChange,
                 leadingIcon = {
@@ -321,31 +354,44 @@ private fun EditClientContent(
                 },
                 modifier = Modifier.weight(1f)
             )
-            Spacer(modifier = Modifier.width(16.dp))
-            InputField(
-                label = stringResource(id = R.string.document_number_label),
-                value = documentNumber,
-                onValueChange = onDocumentNumberChange,
-                modifier = Modifier.weight(1f)
-            )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
         InputField(
-            label = stringResource(id = R.string.client_description_label),
+            label = "Dirección",
+            value = address,
+            onValueChange = onAddressChange,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Descripción Adicional",
+            color = Color.White,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        InputField(
+            label = "Descripción",
             value = description,
             onValueChange = onDescriptionChange,
             isMultiline = true,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(200.dp)
+                .height(150.dp)
         )
         Text(
-            text = stringResource(id = R.string.char_count, description.length, 1000),
+            text = "${description.length}/1000",
             color = Color.White,
             fontSize = 10.sp,
-            modifier = Modifier.align(Alignment.End).padding(top = 4.dp)
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(top = 4.dp)
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -356,16 +402,25 @@ private fun EditClientContent(
                 .fillMaxWidth()
                 .height(48.dp),
             colors = ButtonDefaults.buttonColors(containerColor = FigmaGold),
-            shape = RoundedCornerShape(24.dp)
+            shape = RoundedCornerShape(24.dp),
+            enabled = !isLoading
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    painter = painterResource(id = R.drawable.boton_crear_expedientes),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(20.dp),
+                    color = Color.Black,
+                    strokeWidth = 2.dp
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(id = R.string.save_client), fontSize = 16.sp)
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.boton_crear_expedientes),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(text = "Guardar Cliente", fontSize = 16.sp)
+                }
             }
         }
 
@@ -378,7 +433,8 @@ private fun EditClientContent(
                 .height(48.dp),
             border = androidx.compose.foundation.BorderStroke(1.dp, FigmaRed),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = FigmaRed),
-            shape = RoundedCornerShape(24.dp)
+            shape = RoundedCornerShape(24.dp),
+            enabled = !isLoading
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -388,7 +444,7 @@ private fun EditClientContent(
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = stringResource(id = R.string.delete_case), fontSize = 16.sp)
+                Text(text = "Eliminar Cliente", fontSize = 16.sp)
             }
         }
 
