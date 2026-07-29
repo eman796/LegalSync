@@ -12,11 +12,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -79,9 +84,10 @@ fun HomeScreen(
                 }
                 
                 item { SectionHeader(title = "¿Qué hay para hoy?") }
+                
+                // TARJETA DE PRÓXIMO EVENTO ACTUALIZADA
                 item { NextEventCard() }
 
-                // TEXTO "Que sigue ahora"
                 item { 
                     Text(
                         text = "Que sigue ahora",
@@ -92,7 +98,6 @@ fun HomeScreen(
                     )
                 }
 
-                // TARJETAS REPLACING GOLD RECTANGLES
                 item { StatsRow() }
                 
                 item {
@@ -131,33 +136,134 @@ fun HomeScreen(
 }
 
 @Composable
+fun NextEventCard() {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, FigmaGold, RoundedCornerShape(12.dp)),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Sección Fecha
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.width(95.dp)
+            ) {
+                Text(text = "Mayo de 2026", color = Color.White, fontSize = 12.sp)
+                Text(text = "Martes", color = Color.White, fontSize = 15.sp)
+                Text(text = "20", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+            }
+
+            // Línea divisoria blanca
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .height(80.dp)
+                    .background(Color.White.copy(alpha = 0.5f))
+            )
+
+            // Detalles del Evento
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp)
+            ) {
+                Text(text = "hh:mm:a/p", color = Color.White, fontSize = 14.sp)
+                Text(
+                    text = "Lorem Ipsum", 
+                    color = Color.White, 
+                    fontSize = 18.sp, 
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(text = "Caso numero Lorem Ipsum", color = Color.White, fontSize = 14.sp)
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_location_pin),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "HEARTBREAK AVENUE, TWICELAND", 
+                        color = Color.White, 
+                        fontSize = 10.sp,
+                        maxLines = 1
+                    )
+                }
+            }
+
+            // Etiqueta y Flecha
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.height(80.dp)
+            ) {
+                // Etiqueta con borde punteado (Dashed)
+                Box(
+                    modifier = Modifier
+                        .drawBehind {
+                            drawRoundRect(
+                                color = Color(0xFF9E8D44),
+                                style = Stroke(
+                                    width = 2f,
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                                ),
+                                cornerRadius = CornerRadius(8.dp.toPx())
+                            )
+                        }
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = "Audiencia", color = Color.White, fontSize = 11.sp)
+                }
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_right_gold),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
+    }
+}
+
+@Composable
 fun StatsRow() {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Tarjeta: Expedientes Activos
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "+1k", 
-            labelLines = listOf("Expedientes", "Activos"),
+            labelLines = listOf("Expedien", "tes", "Activos"),
             icon = painterResource(id = R.drawable.ic_card_folder_figma)
         )
-        // Tarjeta: Audiencias Para hoy
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "X", 
-            labelLines = listOf("Audiencias", "Para: hoy"),
+            labelLines = listOf("Audien", "cias", "Para: hoy"),
             icon = painterResource(id = R.drawable.ic_card_calendar_figma)
         )
-        // Tarjeta: Compromisos Próximamente
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "+1k", 
-            labelLines = listOf("Compromisos", "Próximamente"),
+            labelLines = listOf("Compromi", "sos", "Próximamente"),
             icon = painterResource(id = R.drawable.ic_card_clock_figma)
         )
-        // Tarjeta: Tareas Pendientes
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "+1k", 
@@ -175,7 +281,7 @@ fun StatCard(
     icon: Painter
 ) {
     Card(
-        modifier = modifier.height(200.dp),
+        modifier = modifier.height(210.dp),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27)),
         border = BorderStroke(1.dp, FigmaGold)
@@ -187,55 +293,19 @@ fun StatCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Icono Hollow Dorado del Figma
             Icon(
                 painter = icon,
                 contentDescription = null,
-                tint = Color.Unspecified, // Respeta el color dorado definido en el XML
-                modifier = Modifier.size(60.dp).padding(top = 4.dp)
+                tint = Color.Unspecified,
+                modifier = Modifier.size(75.dp).padding(top = 4.dp)
             )
-            
-            Text(
-                text = count, 
-                color = Color.White, 
-                fontSize = 24.sp, 
-                fontWeight = FontWeight.ExtraBold
-            )
-            
+            Text(text = count, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 labelLines.forEach { line ->
-                    Text(
-                        text = line, 
-                        color = Color.White, 
-                        fontSize = 11.sp, 
-                        textAlign = TextAlign.Center, 
-                        lineHeight = 13.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    Text(text = line, color = Color.White, fontSize = 12.sp, textAlign = TextAlign.Center, lineHeight = 14.sp, fontWeight = FontWeight.Bold)
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun NextEventCard() {
-    Card(
-        modifier = Modifier.fillMaxWidth().border(1.dp, FigmaGold, RoundedCornerShape(12.dp)),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
-    ) {
-        Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
-                Text(text = "Mayo de 2026", color = Color.Gray, fontSize = 10.sp)
-                Text(text = "Martes", color = Color.White, fontSize = 14.sp)
-                Text(text = "20", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-            }
-            VerticalDivider(color = FigmaGold, modifier = Modifier.height(70.dp).padding(horizontal = 12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = "hh:mm:a/p", color = Color.Gray, fontSize = 12.sp)
-                Text(text = "Audiencia Importante", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-            }
+            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }
