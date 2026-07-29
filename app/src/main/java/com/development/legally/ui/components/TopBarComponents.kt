@@ -16,13 +16,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
@@ -47,7 +47,7 @@ fun UserAction(
         Icon(
             painter = painterResource(id = R.drawable.boton_usuario_expedientes),
             contentDescription = "Usuario",
-            tint = Color.White,
+            tint = goldColor,
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -75,7 +75,7 @@ fun UserAction(
     }
 }
 
-// 2. NOTIFICACIONES (CAMBIO DE ICONO Y POPUP)
+// 2. NOTIFICACIONES (CORREGIDO: ICONO DINÁMICO Y POSICIÓN)
 @Composable
 fun NotificationAction(
     modifier: Modifier = Modifier,
@@ -83,39 +83,45 @@ fun NotificationAction(
     goldColor: Color = Color(0xFF9E8D44)
 ) {
     var isExpanded by remember { mutableStateOf(false) }
+    val density = LocalDensity.current
 
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
+    Box(
         modifier = modifier
             .width(23.dp)
             .height(19.2.dp)
             .clickable { isExpanded = !isExpanded }
     ) {
         Icon(
-            painter = painterResource(id = R.drawable.boton_notificaciones_expedientes),
+            painter = painterResource(
+                // Alterna entre el icono relleno (on) y el contorno transparente (off)
+                id = if (isExpanded) R.drawable.ic_notifications_on else R.drawable.ic_notifications_off
+            ),
             contentDescription = "Notificaciones",
-            tint = if (isExpanded) goldColor else Color.White,
+            // Usamos Unspecified para que se vea el color/transparencia real del XML
+            tint = Color.Unspecified,
             modifier = Modifier.fillMaxSize()
         )
         
         if (isExpanded) {
             Popup(
                 alignment = Alignment.TopEnd,
-                onDismissRequest = { isExpanded = false }
+                onDismissRequest = { isExpanded = false },
+                // Desplazamos el panel hacia abajo para que el icono de la campana sea clickable para cerrar
+                offset = IntOffset(0, with(density) { 35.dp.roundToPx() })
             ) {
                 Card(
                     modifier = Modifier
-                        .width(250.dp)
-                        .padding(top = 10.dp)
+                        .width(280.dp)
+                        .padding(end = 10.dp)
                         .border(1.dp, goldColor, RoundedCornerShape(8.dp)),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
                 ) {
-                    LazyColumn(modifier = Modifier.padding(8.dp)) {
+                    LazyColumn(modifier = Modifier.padding(12.dp)) {
                         item {
                             Text("Notificaciones", color = goldColor, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
                         }
                         items(notifications) { notification ->
-                            Text(notification, color = Color.White, fontSize = 12.sp, modifier = Modifier.padding(vertical = 4.dp))
+                            Text(notification, color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(vertical = 4.dp))
                             HorizontalDivider(color = Color.DarkGray)
                         }
                     }
@@ -201,7 +207,7 @@ fun SectionHeader(
 ) {
     Box(
         modifier = modifier
-            .width(389.dp)
+            .fillMaxWidth()
             .alpha(1f),
         contentAlignment = Alignment.Center
     ) {
@@ -211,7 +217,7 @@ fun SectionHeader(
             outlineColor = goldColor,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             strokeWidth = 3f
         )
     }

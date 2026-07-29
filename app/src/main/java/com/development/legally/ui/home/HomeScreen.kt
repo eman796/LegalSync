@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -14,10 +13,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,13 +49,8 @@ fun HomeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // 1. USUARIO (Logout con confirmación)
                     UserAction(onLogoutConfirm = onLogout)
-                    
-                    // 4. TITULO DE SECCIÓN (Con borde dorado)
                     SectionHeader(title = "Inicio", modifier = Modifier.weight(1f))
-                    
-                    // 2. NOTIFICACIONES
                     NotificationAction()
                 }
             },
@@ -77,18 +71,29 @@ fun HomeScreen(
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(horizontal = 17.dp, vertical = 0.dp),
-                verticalArrangement = Arrangement.spacedBy(28.dp)
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 item { 
                     Spacer(modifier = Modifier.height(16.dp)) 
-                    // 3. BARRA DE BÚSQUEDA (Placeholder con OutlinedText)
                     MainSearchBar(title = "Buscar expedientes, clientes...", onSearch = {})
                 }
                 
                 item { SectionHeader(title = "¿Qué hay para hoy?") }
-                item { StatsRow() }
-                item { SectionHeader(title = "¿Qué sigue ahora?") }
                 item { NextEventCard() }
+
+                // TEXTO "Que sigue ahora"
+                item { 
+                    Text(
+                        text = "Que sigue ahora",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
+                }
+
+                // TARJETAS REPLACING GOLD RECTANGLES
+                item { StatsRow() }
                 
                 item {
                     Row(
@@ -129,32 +134,86 @@ fun HomeScreen(
 fun StatsRow() {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(10.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        StatCard(modifier = Modifier.weight(1f), count = "+1k", label = "Expedientes\nActivos")
-        StatCard(modifier = Modifier.weight(1f), count = "x", label = "Audiencias", subLabel = "Para: hoy")
-        StatCard(modifier = Modifier.weight(1f), count = "+1k", label = "Compromisos", subLabel = "Próximamente")
-        StatCard(modifier = Modifier.weight(1f), count = "+1k", label = "Tareas", subLabel = "Pendientes")
+        // Tarjeta: Expedientes Activos
+        StatCard(
+            modifier = Modifier.weight(1f), 
+            count = "+1k", 
+            labelLines = listOf("Expedientes", "Activos"),
+            icon = painterResource(id = R.drawable.ic_card_folder_figma)
+        )
+        // Tarjeta: Audiencias Para hoy
+        StatCard(
+            modifier = Modifier.weight(1f), 
+            count = "X", 
+            labelLines = listOf("Audiencias", "Para: hoy"),
+            icon = painterResource(id = R.drawable.ic_card_calendar_figma)
+        )
+        // Tarjeta: Compromisos Próximamente
+        StatCard(
+            modifier = Modifier.weight(1f), 
+            count = "+1k", 
+            labelLines = listOf("Compromisos", "Próximamente"),
+            icon = painterResource(id = R.drawable.ic_card_clock_figma)
+        )
+        // Tarjeta: Tareas Pendientes
+        StatCard(
+            modifier = Modifier.weight(1f), 
+            count = "+1k", 
+            labelLines = listOf("Tareas", "Pendientes"),
+            icon = painterResource(id = R.drawable.ic_card_tasks_figma)
+        )
     }
 }
 
 @Composable
-fun StatCard(modifier: Modifier = Modifier, count: String, label: String, subLabel: String? = null) {
+fun StatCard(
+    modifier: Modifier = Modifier, 
+    count: String, 
+    labelLines: List<String>, 
+    icon: Painter
+) {
     Card(
-        modifier = modifier.height(190.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        modifier = modifier.height(200.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27)),
         border = BorderStroke(1.dp, FigmaGold)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Box(modifier = Modifier.width(23.dp).height(45.dp).background(FigmaGold))
-            Text(text = count, color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-            Text(text = label, color = Color.White, fontSize = 10.sp, textAlign = TextAlign.Center, lineHeight = 12.sp)
-            subLabel?.let { Text(text = it, color = Color.White, fontSize = 9.sp) }
+            // Icono Hollow Dorado del Figma
+            Icon(
+                painter = icon,
+                contentDescription = null,
+                tint = Color.Unspecified, // Respeta el color dorado definido en el XML
+                modifier = Modifier.size(60.dp).padding(top = 4.dp)
+            )
+            
+            Text(
+                text = count, 
+                color = Color.White, 
+                fontSize = 24.sp, 
+                fontWeight = FontWeight.ExtraBold
+            )
+            
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                labelLines.forEach { line ->
+                    Text(
+                        text = line, 
+                        color = Color.White, 
+                        fontSize = 11.sp, 
+                        textAlign = TextAlign.Center, 
+                        lineHeight = 13.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
     }
 }
@@ -164,7 +223,7 @@ fun NextEventCard() {
     Card(
         modifier = Modifier.fillMaxWidth().border(1.dp, FigmaGold, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
     ) {
         Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(80.dp)) {
