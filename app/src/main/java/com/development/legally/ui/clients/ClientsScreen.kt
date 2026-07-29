@@ -7,9 +7,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.development.legally.R
 import com.development.legally.ui.theme.LegallyTheme
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
+import com.development.legally.ui.components.*
 
 private val FigmaBackground = Color(0xFF1C2632)
 private val FigmaGold = Color(0xFF9E8D44)
@@ -39,6 +38,7 @@ private val FigmaStatusResolved = Color(0xFFFF0000)
 @Composable
 fun ClientsScreen(
     modifier: Modifier = Modifier,
+    onLogout: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
@@ -46,6 +46,20 @@ fun ClientsScreen(
     onNavigateToEditClient: (String) -> Unit = {}
 ) {
     Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 17.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                UserAction(onLogoutConfirm = onLogout)
+                SectionHeader(title = "Clientes del abogad@", modifier = Modifier.weight(1f))
+                NotificationAction()
+            }
+        },
         bottomBar = {
             LegallyBottomNavigationBar(
                 currentRoute = "clients",
@@ -58,92 +72,35 @@ fun ClientsScreen(
         },
         containerColor = FigmaBackground
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 17.dp)
         ) {
-            // 2. Usuario
-            Icon(
-                painter = painterResource(id = R.drawable.boton_usuario_expedientes),
-                contentDescription = null,
-                tint = FigmaGold,
-                modifier = Modifier
-                    .offset(x = 17.dp, y = 32.dp)
-                    .size(width = 15.dp, height = 15.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            MainSearchBar(
+                title = "Buscar clientes...",
+                onSearch = { /* Implementar búsqueda */ }
             )
 
-            // 3. Titulo Clientes del abogado
-            Text(
-                text = "Clientes del abogad@",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+            Spacer(modifier = Modifier.height(24.dp))
+
+            LocalSectionHeader(title = "Filtrar por:")
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            LocalSectionHeader(title = "Ordenar por:")
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Box(
                 modifier = Modifier
-                    .offset(x = 0.dp, y = 33.dp)
                     .fillMaxWidth()
-                    .height(19.dp)
-            )
-
-            // 4. Notificaciones Clientes
-            Icon(
-                painter = painterResource(id = R.drawable.boton_notificaciones_expedientes),
-                contentDescription = null,
-                tint = FigmaGold,
-                modifier = Modifier
-                    .offset(x = 354.dp, y = 32.dp)
-                    .size(width = 23.dp, height = 19.2.dp)
-            )
-
-            // 5. Barra de busqueda Clientes
-            Box(
-                modifier = Modifier
-                    .offset(x = 17.dp, y = 67.dp)
-                    .size(width = 356.dp, height = 48.dp)
-                    .background(FigmaSearchBackground, RoundedCornerShape(44.dp))
-                    .border(1.dp, FigmaGold, RoundedCornerShape(44.dp))
-            ) {
-                Text(
-                    text = "Buscar expedientes, clientes o casos...",
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    modifier = Modifier
-                        .padding(start = 20.dp)
-                        .align(Alignment.CenterStart)
-                )
-                
-                // 5.1 Cancelar Barra de busqueda Clientes
-                Box(
-                    modifier = Modifier
-                        .offset(x = 305.dp, y = 6.dp)
-                        .size(width = 31.dp, height = 36.dp)
-                        .background(FigmaGold)
-                        .clickable { }
-                )
-            }
-
-            // 6. Filtrar por (general)
-            SectionHeader(
-                title = "Filtrar por:",
-                modifier = Modifier.offset(x = 17.dp, y = 124.dp)
-            )
-
-            // 7. Ordenar por (general)
-            SectionHeader(
-                title = "Ordenar por:",
-                modifier = Modifier.offset(x = 17.dp, y = 172.dp)
-            )
-
-            // 8. Listado de Clientes general
-            Box(
-                modifier = Modifier
-                    .offset(x = 17.dp, y = 220.dp)
-                    .size(width = 360.dp, height = 591.dp)
+                    .weight(1f)
                     .background(FigmaSearchBackground)
             ) {
-
                 val sampleClients = listOf(
                     ClientItemData("1", "Juan Perez", "Expedientes activos: 3", "12 Procesos", true),
                     ClientItemData("2", "Maria Garcia", "Expedientes activos: 1", "5 Procesos", false),
@@ -151,11 +108,10 @@ fun ClientsScreen(
                     ClientItemData("4", "Ana Martinez", "Expedientes activos: 2", "10 Procesos", false),
                     ClientItemData("5", "Luis Hernandez", "Expedientes activos: 4", "15 Procesos", true),
                     ClientItemData("6", "Sofia Lopez", "Expedientes activos: 1", "3 Procesos", true),
-                    ClientItemData("7", "Diego Ruiz", "Expedientes activos: 0", "2 Procesos", false))
+                    ClientItemData("7", "Diego Ruiz", "Expedientes activos: 0", "2 Procesos", false)
+                )
 
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize()
-                ) {
+                LazyColumn(modifier = Modifier.fillMaxSize()) {
                     items(sampleClients) { client ->
                         ClientListItem(
                             data = client,
@@ -169,26 +125,17 @@ fun ClientsScreen(
 }
 
 @Composable
-private fun SectionHeader(
-    title: String,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .size(width = 358.dp, height = 50.dp)
-    ) {
+private fun LocalSectionHeader(title: String) {
+    Column {
         Text(
             text = title,
             color = Color.White,
             fontSize = 14.sp,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.offset(x = 0.dp, y = 0.dp)
+            fontWeight = FontWeight.ExtraBold
         )
-        
+        Spacer(modifier = Modifier.height(8.dp))
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .align(Alignment.BottomCenter),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
@@ -242,15 +189,9 @@ private fun ClientListItem(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
+            .height(60.dp)
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
-                drawLine(
-                    color = FigmaGold,
-                    start = Offset(0f, 0f),
-                    end = Offset(size.width, 0f),
-                    strokeWidth = strokeWidth
-                )
                 drawLine(
                     color = FigmaGold,
                     start = Offset(0f, size.height),
@@ -258,74 +199,57 @@ private fun ClientListItem(
                     strokeWidth = strokeWidth
                 )
             }
+            .clickable { onEditClick() }
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
-        // 8.2 Nombre Cliente
-        Text(
-            text = data.name,
-            color = Color.White,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier
-                .offset(x = 28.35.dp, y = 0.dp)
-                .size(width = 111.28.dp, height = 23.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        // 8.3 Expedientes activos
-        Text(
-            text = data.activeFiles,
-            color = Color.White,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Normal,
-            modifier = Modifier
-                .offset(x = 28.35.dp, y = 23.dp)
-                .size(width = 114.43.dp, height = 15.dp),
-            maxLines = 1
-        )
-
-        // 8.4 Cantidad Procesos
-        Text(
-            text = data.processCount,
-            color = Color.White,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier
-                .offset(x = 29.4.dp, y = 38.dp)
-                .size(width = 328.6.dp, height = 8.dp),
-            maxLines = 1
-        )
-
-        // 8.5 Etiqueta de actividad
-        Box(
-            modifier = Modifier
-                .offset(x = 288.82.dp, y = 18.dp) // Adjusted slightly to fit within element
-                .size(width = 47.24.dp, height = 23.dp)
-                .background(
-                    if (data.isActive) FigmaStatusActive else FigmaStatusResolved,
-                    RoundedCornerShape(2.dp)
-                ),
-            contentAlignment = Alignment.Center
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = if (data.isActive) "Activo" else "Resuelto",
-                color = Color.Black,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Light,
-                textAlign = TextAlign.Center
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = data.name,
+                    color = Color.White,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = data.activeFiles,
+                    color = Color.White,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Normal
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .size(width = 60.dp, height = 24.dp)
+                    .background(
+                        if (data.isActive) FigmaStatusActive else FigmaStatusResolved,
+                        RoundedCornerShape(4.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = if (data.isActive) "Activo" else "Resuelto",
+                    color = Color.Black,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Icon(
+                painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
+                contentDescription = null,
+                tint = FigmaGold,
+                modifier = Modifier.size(16.dp)
             )
         }
-        
-        // 8.6 Ir a
-        Icon(
-            painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
-            contentDescription = "Editar Cliente",
-            tint = FigmaGold,
-            modifier = Modifier
-                .offset(x = 342.2.dp, y = 14.46.dp)
-                .size(width = 8.49.dp, height = 17.07.dp)
-                .clickable { onEditClick() }
-        )
     }
 }
 

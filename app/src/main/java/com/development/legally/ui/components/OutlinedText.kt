@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 
@@ -18,14 +19,16 @@ fun OutlinedText(
     mainColor: Color,      // 1. Color principal (relleno)
     outlineColor: Color,   // 2. Color del borde (contorno)
     modifier: Modifier = Modifier,
-    strokeWidth: Float = 3f,
+    strokeWidth: Float = 2f,
     fontSize: TextUnit = 16.sp,
-    fontWeight: FontWeight = FontWeight.Normal
+    fontWeight: FontWeight = FontWeight.Normal,
+    textAlign: TextAlign = TextAlign.Start
 ) {
     Box(modifier = modifier) {
-        // Texto de fondo (el contorno/borde)
+        // Texto de fondo (el borde/contorno)
         Text(
             text = text,
+            textAlign = textAlign,
             style = TextStyle(
                 fontSize = fontSize,
                 fontWeight = fontWeight,
@@ -39,6 +42,7 @@ fun OutlinedText(
         // Texto de frente (el relleno principal)
         Text(
             text = text,
+            textAlign = textAlign,
             style = TextStyle(
                 fontSize = fontSize,
                 fontWeight = fontWeight,

@@ -49,6 +49,13 @@ fun LegallyApp() {
     }
     val navController = rememberNavController()
 
+    val onLogout = {
+        authRepository.logout()
+        navController.navigate(Screen.Welcome.route) {
+            popUpTo(0) { inclusive = true }
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination
@@ -88,6 +95,7 @@ fun LegallyApp() {
         }
         composable(Screen.Home.route) {
             HomeScreen(
+                onLogout = onLogout,
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
@@ -97,6 +105,7 @@ fun LegallyApp() {
         }
         composable(Screen.Cases.route) {
             CasesScreen(
+                onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
@@ -105,6 +114,7 @@ fun LegallyApp() {
         }
         composable(Screen.Agenda.route) {
             AgendaScreen(
+                onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
@@ -113,6 +123,7 @@ fun LegallyApp() {
         }
         composable(Screen.Clients.route) {
             ClientsScreen(
+                onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.development.legally.R
 import com.development.legally.ui.theme.LegallyTheme
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
+import com.development.legally.ui.components.*
 
 private val FigmaBackground = Color(0xFF1C2632)
 private val FigmaGold = Color(0xFF9E8D44)
@@ -39,157 +40,101 @@ private val FigmaStatusBusy = Color(0xFFFF0000)
 @Composable
 fun AgendaScreen(
     modifier: Modifier = Modifier,
+    onLogout: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
     onNavigateToClients: () -> Unit = {}
 ) {
     Scaffold(
+        topBar = {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .statusBarsPadding()
+                    .padding(horizontal = 17.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // 1. Usuario (Logout)
+                UserAction(onLogoutConfirm = onLogout)
+                
+                // 4. Titulo Sección
+                SectionHeader(title = "Agenda del abogado", modifier = Modifier.weight(1f))
+                
+                // 2. Notificaciones
+                NotificationAction()
+            }
+        },
         bottomBar = {
             LegallyBottomNavigationBar(
                 currentRoute = "agenda",
                 onInicioClick = onNavigateToHome,
                 onExpedientesClick = onNavigateToCases,
                 onCrearClick = onNavigateToNewCase,
-                onAgendaClick = { /* Already here */ },
+                onAgendaClick = { /* Ya estamos aquí */ },
                 onClientesClick = onNavigateToClients
             )
         },
         containerColor = FigmaBackground
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = modifier
                 .fillMaxSize()
                 .padding(paddingValues)
+                .padding(horizontal = 17.dp)
         ) {
-            // 2. Usuario Agenda
-            Icon(
-                painter = painterResource(id = R.drawable.boton_usuario_expedientes),
-                contentDescription = null,
-                tint = FigmaGold,
-                modifier = Modifier
-                    .offset(x = 17.dp, y = 32.dp)
-                    .size(15.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // 3. Barra de búsqueda unificada
+            MainSearchBar(
+                title = "Buscar eventos, fechas...",
+                onSearch = { /* Implementar búsqueda */ }
             )
 
-            // 3. Titulo Agenda del abogado
-            Text(
-                text = "Agenda del abogado",
-                color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Filtros locales
+            LocalFilterSection(title = "Filtrar por")
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Ordenar locales
+            LocalFilterSection(title = "Ordenar por")
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Listado de agenda
+            Box(
                 modifier = Modifier
-                    .offset(x = 0.dp, y = 33.dp)
                     .fillMaxWidth()
-                    .height(19.dp)
-            )
-
-            // 4. Notificaciones Agenda
-            Box(
-                modifier = Modifier
-                    .offset(x = 354.dp, y = 32.dp)
-                    .size(width = 23.dp, height = 19.2.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.boton_notificaciones_expedientes),
-                    contentDescription = null,
-                    tint = FigmaGold,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-
-            // 5. Barra de busqueda agenda
-            Box(
-                modifier = Modifier
-                    .offset(x = 18.dp, y = 67.dp)
-                    .size(width = 357.dp, height = 48.dp)
-                    .background(FigmaSearchBackground, RoundedCornerShape(44.dp))
-                    .border(1.dp, FigmaGold, RoundedCornerShape(44.dp))
-            ) {
-                Text(
-                    text = "Buscar",
-                    color = Color.White,
-                    fontSize = 13.sp,
-                    modifier = Modifier
-                        .padding(start = 20.dp)
-                        .align(Alignment.CenterStart)
-                )
-                
-                // 5.1 Cancelar Barra de busqueda Agenda
-                Box(
-                    modifier = Modifier
-                        .offset(x = 304.dp, y = 6.dp)
-                        .size(width = 31.dp, height = 36.dp)
-                        .background(FigmaGold)
-                        .clickable { }
-                )
-            }
-
-            // 6. Filtrar por (general)
-            Box(
-                modifier = Modifier
-                    .offset(x = 17.dp, y = 124.dp)
-                    .size(width = 358.dp, height = 47.dp)
-            ) {
-                Text(
-                    text = "Filtrar por",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W900,
-                    modifier = Modifier.align(Alignment.TopStart)
-                )
-                
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
-                    FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
-                    FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
-                    FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
-                }
-            }
-
-            // 7. Ordenar por (general)
-            Box(
-                modifier = Modifier
-                    .offset(x = 17.dp, y = 180.dp) 
-                    .size(width = 358.dp, height = 47.dp)
-            ) {
-                Text(
-                    text = "Ordenar por",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.W900,
-                    modifier = Modifier.align(Alignment.TopStart)
-                )
-                
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
-                    FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
-                    FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
-                    FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
-                }
-            }
-
-            // 8. Listado de agenda general
-            Box(
-                modifier = Modifier
-                    .offset(x = 15.dp, y = 240.dp) 
-                    .size(width = 360.dp, height = 591.dp)
+                    .weight(1f)
                     .background(FigmaSearchBackground)
             ) {
                 AgendaList()
             }
+        }
+    }
+}
+
+@Composable
+private fun LocalFilterSection(title: String) {
+    Column {
+        Text(
+            text = title,
+            color = Color.White,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W900
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            FilterButton(text = "Fecha", modifier = Modifier.weight(1f))
+            FilterButton(text = "Cliente", modifier = Modifier.weight(1f))
+            FilterButton(text = "Tipo", modifier = Modifier.weight(1f))
+            FilterButton(text = "Urgencia", color = FigmaUrgentRed, modifier = Modifier.weight(1f))
         }
     }
 }
@@ -256,15 +201,9 @@ fun AgendaListItem(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(49.dp)
+            .height(55.dp)
             .drawBehind {
                 val strokeWidth = 1.dp.toPx()
-                drawLine(
-                    color = FigmaGold,
-                    start = Offset(0f, 0f),
-                    end = Offset(size.width, 0f),
-                    strokeWidth = strokeWidth
-                )
                 drawLine(
                     color = FigmaGold,
                     start = Offset(0f, size.height),
@@ -272,78 +211,61 @@ fun AgendaListItem(
                     strokeWidth = strokeWidth
                 )
             }
+            .padding(horizontal = 12.dp),
+        contentAlignment = Alignment.CenterStart
     ) {
-        // 8.2 Duracion: X3, Y5
-        Text(
-            text = data.duration,
-            color = Color.White,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.W900,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .offset(x = 3.dp, y = 5.dp)
-                .size(width = 78.dp, height = 34.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        
-        // 8.4 Cliente relacionado: X164, Y15
-        Text(
-            text = data.client,
-            color = Color.White,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .offset(x = 164.dp, y = 15.dp)
-                .size(width = 176.dp, height = 11.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-
-        // 8.3 caso relacionado: X2, Y24
-        Text(
-            text = data.caseId,
-            color = Color.White,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Normal,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .offset(x = 2.dp, y = 24.dp)
-                .size(width = 176.dp, height = 23.dp),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-        
-        // 8.5 Mostrar como: bola (X263, Y24)
-        Box(
-            modifier = Modifier
-                .offset(x = 263.dp, y = 24.dp)
-                .size(10.dp)
-                .clip(CircleShape)
-                .background(data.statusColor)
-        )
-        
-        // 8.5 Mostrar como: texto (X290, Y24)
-        Text(
-            text = data.status,
-            color = Color.White,
-            fontSize = 9.sp,
-            fontWeight = FontWeight.Medium,
-            modifier = Modifier
-                .offset(x = 280.dp, y = 24.dp)
-                .size(width = 48.dp, height = 14.dp)
-        )
-        
-        // 8.6 Ir a: X341, Y18
-        Icon(
-            painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
-            contentDescription = null,
-            tint = Color.White,
-            modifier = Modifier
-                .offset(x = 341.dp, y = 18.dp)
-                .size(width = 8.49.dp, height = 17.07.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = data.duration,
+                color = Color.White,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.width(100.dp)
+            )
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = data.caseId,
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Normal
+                )
+                Text(
+                    text = data.client,
+                    color = Color.Gray,
+                    fontSize = 10.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+            
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(10.dp)
+                        .clip(CircleShape)
+                        .background(data.statusColor)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = data.status,
+                    color = Color.White,
+                    fontSize = 10.sp
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(12.dp))
+            
+            Icon(
+                painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(12.dp)
+            )
+        }
     }
 }
 
