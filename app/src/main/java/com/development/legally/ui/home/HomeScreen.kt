@@ -141,28 +141,28 @@ fun StatsRow() {
             modifier = Modifier.weight(1f), 
             count = "+1k", 
             labelLines = listOf("Expedientes", "Activos"),
-            icon = painterResource(id = R.drawable.ic_card_folder_figma)
+            icon = painterResource(id = R.drawable.ic_card_folder)
         )
         // Tarjeta: Audiencias Para hoy
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "X", 
             labelLines = listOf("Audiencias", "Para: hoy"),
-            icon = painterResource(id = R.drawable.ic_card_calendar_figma)
+            icon = painterResource(id = R.drawable.ic_card_calendar)
         )
         // Tarjeta: Compromisos Próximamente
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "+1k", 
             labelLines = listOf("Compromisos", "Próximamente"),
-            icon = painterResource(id = R.drawable.ic_card_clock_figma)
+            icon = painterResource(id = R.drawable.ic_card_clock)
         )
         // Tarjeta: Tareas Pendientes
         StatCard(
             modifier = Modifier.weight(1f), 
             count = "+1k", 
             labelLines = listOf("Tareas", "Pendientes"),
-            icon = painterResource(id = R.drawable.ic_card_tasks_figma)
+            icon = painterResource(id = R.drawable.ic_card_tasks)
         )
     }
 }
