@@ -44,7 +44,6 @@ fun HomeScreen(
     onNavigateToEditEvent: (String) -> Unit = {}
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
-
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             topBar = { 
@@ -86,8 +85,6 @@ fun HomeScreen(
                 }
                 
                 item { SectionHeader(title = "¿Qué hay para hoy?") }
-                
-                // 1. SOLUCIÓN BUG CALENDARIO
                 item { 
                     NextEventCard(onClick = { onNavigateToEditEvent("event_id_123") }) 
                 }
@@ -102,15 +99,12 @@ fun HomeScreen(
                     )
                 }
 
-                // 2. SOLUCIÓN BUG TARJETAS
                 item { 
                     StatsRow(
                         onNavigateToCases = onNavigateToCases,
                         onNavigateToAgenda = onNavigateToAgenda
                     ) 
                 }
-                
-                // MÓDULO: CASOS MAS RECIENTES (3 elementos)
                 item {
                     Column {
                         Row(

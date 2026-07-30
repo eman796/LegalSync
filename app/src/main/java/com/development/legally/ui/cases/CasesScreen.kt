@@ -1,25 +1,20 @@
 package com.development.legally.ui.cases
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.development.legally.R
 import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import com.development.legally.ui.components.*
+import com.development.legally.ui.Nuevo.NewOverlay
 
 @Composable
 fun CasesScreen(
@@ -27,133 +22,98 @@ fun CasesScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
-    onNavigateToClients: () -> Unit = {}
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToEditCase: (String) -> Unit = {},
+    onNavigateToEditClient: (String) -> Unit = {}
 ) {
-    Scaffold(
-        topBar = {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .statusBarsPadding()
-                    .padding(horizontal = 17.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                UserAction(onLogoutConfirm = onLogout)
-                SectionHeader(title = "Expedientes", modifier = Modifier.weight(1f))
-                NotificationAction()
-            }
-        },
-        bottomBar = { 
-            LegallyBottomNavigationBar(
-                currentRoute = "cases",
-                onInicioClick = onNavigateToHome,
-                onExpedientesClick = { /* Already here */ },
-                onCrearClick = onNavigateToNewCase,
-                onAgendaClick = onNavigateToAgenda,
-                onClientesClick = onNavigateToClients
-            )
-        },
-        containerColor = CaseBackground
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 17.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            MainSearchBar(
-                title = "Buscar expedientes...",
-                onSearch = { /* Implement search */ }
-            )
+    var showNewMenu by remember { mutableStateOf(false) }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            val dummyCases = List(10) { "25-000044-033-PE" }
-
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(dummyCases) { caseNumber ->
-                    CaseItem(caseNumber)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun CaseItem(caseNumber: String) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
-        border = androidx.compose.foundation.BorderStroke(2.dp, DarkGold),
-        elevation = CardDefaults.cardElevation(10.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.Top
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.imasghen_del_martillo_lista_expedientes),
-                contentDescription = null,
-                modifier = Modifier.size(32.dp),
-                colorFilter = ColorFilter.tint(DarkGold)
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Scaffold(
+            topBar = {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .statusBarsPadding()
+                        .padding(horizontal = 17.dp, vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = caseNumber,
-                        color = TextWhite,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "ACTIVO",
-                        color = DarkGold,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+                    UserAction(onLogoutConfirm = onLogout)
+                    SectionHeader(title = "Expedientes", modifier = Modifier.weight(1f))
+                    NotificationAction()
+                }
+            },
+            bottomBar = { 
+                LegallyBottomNavigationBar(
+                    currentRoute = "cases",
+                    onInicioClick = onNavigateToHome,
+                    onExpedientesClick = { },
+                    onCrearClick = { showNewMenu = true },
+                    onAgendaClick = onNavigateToAgenda,
+                    onClientesClick = onNavigateToClients
+                )
+            },
+            containerColor = Color(0xFF1C2632)
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 17.dp)
+            ) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                MainSearchBar(
+                    title = "Buscar expedientes...",
+                    onSearch = { }
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Filtros con el diseño de Figma (Gris azulado)
+                FilterSectionRow(title = "Filtrar por:") {
+                    FilterDropdown(label = "Fecha", options = listOf("Recientes", "Antiguos"), onOptionSelected = {})
+                    FilterDropdown(label = "Cliente", options = listOf("A-Z", "Z-A"), onOptionSelected = {})
+                    FilterDropdown(label = "Tipo", options = listOf("Penal", "Civil", "Laboral"), onOptionSelected = {})
+                    FilterDropdown(label = "URGENTE", options = listOf("Sí", "No"), isUrgent = true, onOptionSelected = {})
                 }
 
-                Text(
-                    text = "Christian Bullgarelli vs Federico cruz A.K.A Choreco",
-                    color = TextWhite,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(top = 8.dp)
+                Spacer(modifier = Modifier.height(24.dp))
+
+                val dummyCases = listOf(
+                    "25-000044-033-PE" to "Christian Bullgarelli vs Federico cruz A.K.A Choreco",
+                    "20-000115-1218-PE" to "Procuraduría vs Luis Guillermo Solís Rivera",
+                    "25-002920-0175-PE" to "Rodrigo Arias Sánchez vs STEPHAN"
                 )
 
-                Text(
-                    text = "Actualizado: Ayer",
-                    color = Color(0xFFBDBDBD),
-                    fontSize = 11.sp,
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .padding(top = 12.dp)
-                )
+                Box(modifier = Modifier.fillMaxWidth().weight(1f).background(Color(0xFF171E27))) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(dummyCases) { (id, desc) ->
+                            // Uso de la clase Maestra de Expedientes
+                            MasterCaseItem(
+                                caseNumber = id,
+                                description = desc,
+                                status = "ACTIVO",
+                                updateDate = "Ayer",
+                                onClick = { onNavigateToEditCase(id) }
+                            )
+                        }
+                    }
+                }
             }
         }
-    }
-}
 
-@Preview(showBackground = true)
-@Composable
-fun CasesScreenPreview() {
-    LegallyTheme {
-        CasesScreen()
+        if (showNewMenu) {
+            NewOverlay(
+                onClose = { showNewMenu = false },
+                onNewClient = { showNewMenu = false; onNavigateToEditClient("new") },
+                onNewEvent = { showNewMenu = false },
+                onNewCase = { showNewMenu = false; onNavigateToNewCase() }
+            )
+        }
     }
 }

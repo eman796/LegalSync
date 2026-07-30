@@ -19,7 +19,6 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
@@ -27,7 +26,6 @@ import com.development.legally.R
 private val FigmaGold = Color(0xFF9E8D44)
 private val FigmaNavBackground = Color(0xFF171E27)
 private val GrayBorder = Color(0xFF485A70)
-private val NavLabelWhite = Color(0xFFFFFFFF)
 
 @Composable
 fun LegallyBottomNavigationBar(
@@ -41,14 +39,14 @@ fun LegallyBottomNavigationBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(110.dp)
+            .height(100.dp)
             .background(Color.Transparent)
     ) {
-        // Main bar background with top gold border
+        // Fondo con borde superior dorado
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(75.dp)
                 .align(Alignment.BottomCenter)
                 .background(FigmaNavBackground)
                 .drawBehind {
@@ -64,74 +62,78 @@ fun LegallyBottomNavigationBar(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(80.dp)
+                .height(75.dp)
                 .align(Alignment.BottomCenter),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
             NavItem(
-                icon = R.drawable.boton_inicio_expedientes,
+                iconOn = R.drawable.ic_nav_inicio_on,
+                iconOff = R.drawable.ic_nav_inicio_off,
                 label = "Inicio",
                 isSelected = currentRoute == "home",
                 onClick = onInicioClick
             )
             NavItem(
-                icon = R.drawable.boton_expedientes_expedientes,
+                iconOn = R.drawable.ic_nav_expedientes_on,
+                iconOff = R.drawable.ic_nav_expedientes_off,
                 label = "Expedientes",
                 isSelected = currentRoute == "cases",
                 onClick = onExpedientesClick
             )
             
-            // Placeholder for the middle button to maintain spacing
-            Spacer(modifier = Modifier.width(60.dp))
+            Spacer(modifier = Modifier.width(50.dp))
 
             NavItem(
-                icon = R.drawable.boton_agendaexpedientes,
+                iconOn = R.drawable.ic_nav_agenda_on,
+                iconOff = R.drawable.ic_nav_agenda_off,
                 label = "Agenda",
                 isSelected = currentRoute == "agenda",
                 onClick = onAgendaClick
             )
             NavItem(
-                icon = R.drawable.boton_clientes_expedientes,
+                iconOn = R.drawable.ic_nav_clientes_on,
+                iconOff = R.drawable.ic_nav_clientes_off,
                 label = "Clientes",
                 isSelected = currentRoute == "clients",
                 onClick = onClientesClick
             )
         }
 
-        // Floating "Crear" button
+        // Botón Crear central (Flotante)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 12.dp)
-                .offset(y = (-15).dp)
+                .padding(bottom = 8.dp)
+                .offset(y = (-10).dp)
                 .clickable { onCrearClick() }
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(54.dp)
                     .clip(CircleShape)
                     .background(FigmaNavBackground)
-                    .border(1.5.dp, FigmaGold, CircleShape),
+                    .border(2.dp, FigmaGold, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Crear",
                     tint = FigmaGold,
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier.size(30.dp)
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
+            // Pastilla del botón crear
             Box(
                 modifier = Modifier
-                    .border(0.8.dp, FigmaGold, RoundedCornerShape(4.dp))
-                    .padding(horizontal = 8.dp, vertical = 1.dp)
+                    .background(FigmaGold, RoundedCornerShape(12.dp))
+                    .padding(horizontal = 10.dp, vertical = 2.dp)
             ) {
                 Text(
                     text = "Crear",
-                    color = FigmaGold,
+                    color = Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -141,13 +143,9 @@ fun LegallyBottomNavigationBar(
 }
 
 @Composable
-@Preview
-fun LegallyBottomNavigationBarPreview() {
-    LegallyBottomNavigationBar(currentRoute = "home")
-}
-@Composable
 private fun NavItem(
-    icon: Int,
+    iconOn: Int,
+    iconOff: Int,
     label: String,
     isSelected: Boolean,
     onClick: () -> Unit
@@ -160,24 +158,29 @@ private fun NavItem(
             .padding(vertical = 4.dp)
     ) {
         Icon(
-            painter = painterResource(id = icon),
+            painter = painterResource(id = if (isSelected) iconOn else iconOff),
             contentDescription = label,
-            tint = FigmaGold,
-            modifier = Modifier.size(22.dp)
+            tint = Color.Unspecified, 
+            modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.height(6.dp))
+        // Pastilla dinámica: Dorada si está seleccionado, gris si no.
         Box(
             modifier = Modifier
-                .border(
-                    width = 0.8.dp,
-                    color = if (isSelected) FigmaGold else GrayBorder,
-                    shape = RoundedCornerShape(4.dp)
+                .background(
+                    if (isSelected) FigmaGold else GrayBorder.copy(alpha = 0.2f),
+                    RoundedCornerShape(12.dp)
                 )
-                .padding(horizontal = 8.dp, vertical = 1.dp)
+                .border(
+                    width = 1.dp,
+                    color = if (isSelected) Color.White.copy(alpha = 0.5f) else GrayBorder,
+                    shape = RoundedCornerShape(12.dp)
+                )
+                .padding(horizontal = 10.dp, vertical = 2.dp)
         ) {
             Text(
                 text = label,
-                color = if (isSelected) FigmaGold else NavLabelWhite,
+                color = Color.White,
                 fontSize = 10.sp,
                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
             )
