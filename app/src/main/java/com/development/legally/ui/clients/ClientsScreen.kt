@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.development.legally.ui.theme.LegallyTheme
+import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import com.development.legally.ui.components.*
 import com.development.legally.ui.Nuevo.NewOverlay
@@ -57,7 +57,7 @@ fun ClientsScreen(
                     onClientesClick = {}
                 )
             },
-            containerColor = Color(0xFF1C2632)
+            containerColor = FigmaBackground
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -90,11 +90,14 @@ fun ClientsScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Box(modifier = Modifier.fillMaxWidth().weight(1f).background(Color(0xFF171E27))) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {
                     if (uiState.loading) {
-                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = Color(0xFF9E8D44))
+                        CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = FigmaGold)
                     } else {
-                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
                             items(uiState.filtered) { client ->
                                 // Uso de la Clase Maestra de Items
                                 MasterClientItem(

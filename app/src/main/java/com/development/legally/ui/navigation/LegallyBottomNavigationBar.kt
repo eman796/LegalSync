@@ -25,7 +25,6 @@ import com.development.legally.R
 
 private val FigmaGold = Color(0xFF9E8D44)
 private val FigmaNavBackground = Color(0xFF171E27)
-private val GrayBorder = Color(0xFF485A70)
 
 @Composable
 fun LegallyBottomNavigationBar(
@@ -39,10 +38,10 @@ fun LegallyBottomNavigationBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(100.dp)
+            .height(105.dp)
             .background(Color.Transparent)
     ) {
-        // Fondo con borde superior dorado
+        // Cuerpo de la barra
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -100,7 +99,7 @@ fun LegallyBottomNavigationBar(
             )
         }
 
-        // Botón Crear central (Flotante)
+        // Botón Crear (Central)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -111,7 +110,7 @@ fun LegallyBottomNavigationBar(
         ) {
             Box(
                 modifier = Modifier
-                    .size(54.dp)
+                    .size(56.dp)
                     .clip(CircleShape)
                     .background(FigmaNavBackground)
                     .border(2.dp, FigmaGold, CircleShape),
@@ -121,22 +120,16 @@ fun LegallyBottomNavigationBar(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Crear",
                     tint = FigmaGold,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(32.dp)
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            // Pastilla del botón crear
             Box(
                 modifier = Modifier
                     .background(FigmaGold, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 10.dp, vertical = 2.dp)
+                    .padding(horizontal = 12.dp, vertical = 2.dp)
             ) {
-                Text(
-                    text = "Crear",
-                    color = Color.White,
-                    fontSize = 10.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text(text = "Crear", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
             }
         }
     }
@@ -157,6 +150,7 @@ private fun NavItem(
             .clickable { onClick() }
             .padding(vertical = 4.dp)
     ) {
+        // Icono On/Off
         Icon(
             painter = painterResource(id = if (isSelected) iconOn else iconOff),
             contentDescription = label,
@@ -164,16 +158,16 @@ private fun NavItem(
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.height(6.dp))
-        // Pastilla dinámica: Dorada si está seleccionado, gris si no.
+        // Diseño de la pastilla (Pill)
         Box(
             modifier = Modifier
                 .background(
-                    if (isSelected) FigmaGold else GrayBorder.copy(alpha = 0.2f),
+                    if (isSelected) FigmaGold else Color.Transparent,
                     RoundedCornerShape(12.dp)
                 )
                 .border(
                     width = 1.dp,
-                    color = if (isSelected) Color.White.copy(alpha = 0.5f) else GrayBorder,
+                    color = FigmaGold,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .padding(horizontal = 10.dp, vertical = 2.dp)

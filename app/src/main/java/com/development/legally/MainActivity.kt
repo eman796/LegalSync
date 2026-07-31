@@ -14,10 +14,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.development.legally.data.repository.AuthRepository
 import com.development.legally.ui.agenda.AgendaScreen
+import com.development.legally.ui.agenda.EditEventScreen
 import com.development.legally.ui.auth.LoginScreen
 import com.development.legally.ui.auth.RegistrationScreen
 import com.development.legally.ui.auth.WelcomeScreen
 import com.development.legally.ui.cases.CasesScreen
+import com.development.legally.ui.cases.EditCaseScreen
 import com.development.legally.ui.cases.NewCaseScreen
 import com.development.legally.ui.clients.ClientsScreen
 import com.development.legally.ui.clients.EditClientScreen
@@ -60,17 +62,26 @@ fun LegallyApp() {
         navController = navController,
         startDestination = startDestination
     ) {
-        // Pantalla genérica para edición (Placeholder)
-        composable("edit_case/{caseId}") { 
-            // Por ahora redirigimos a la lista de expedientes hasta que crees la pantalla de edición
-            CasesScreen(onLogout = onLogout, onNavigateToHome = { navController.navigate(Screen.Home.route) }) 
+        composable("edit_case/{caseId}") { backStackEntry ->
+            val caseId = backStackEntry.arguments?.getString("caseId")
+            EditCaseScreen(
+                caseId = caseId,
+                onBackClick = { navController.popBackStack() },
+                onCancelClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
         }
 
-        composable("edit_event/{eventId}") {
-            // Por ahora redirigimos a la Agenda
-            AgendaScreen(onLogout = onLogout, onNavigateToHome = { navController.navigate(Screen.Home.route) })
+        composable("edit_event/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
+            EditEventScreen(
+                eventId = eventId,
+                onBackClick = { navController.popBackStack() },
+                onCancelClick = { navController.popBackStack() },
+                onSaveClick = { navController.popBackStack() }
+            )
         }
-
+        
         composable("edit_client/{clientId}") { backStackEntry ->
             val clientId = backStackEntry.arguments?.getString("clientId")
             EditClientScreen(
@@ -83,12 +94,14 @@ fun LegallyApp() {
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) }
             )
         }
+        
         composable(Screen.Welcome.route) {
             WelcomeScreen(
                 onLoginClick = { navController.navigate(Screen.Login.route) },
                 onSignupClick = { navController.navigate(Screen.Registration.route) }
             )
         }
+        
         composable(Screen.Login.route) {
             LoginScreen(
                 onLoginSuccess = {
@@ -99,11 +112,13 @@ fun LegallyApp() {
                 onBackClick = { navController.popBackStack() }
             )
         }
+        
         composable(Screen.Registration.route) {
             RegistrationScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }
+        
         composable(Screen.Home.route) {
             HomeScreen(
                 onLogout = onLogout,
@@ -116,24 +131,31 @@ fun LegallyApp() {
                 onNavigateToEditEvent = { eventId -> navController.navigate("edit_event/$eventId") }
             )
         }
+        
         composable(Screen.Cases.route) {
             CasesScreen(
                 onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
-                onNavigateToClients = { navController.navigate(Screen.Clients.route) }
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) },
+                onNavigateToEditCase = { caseId -> navController.navigate("edit_case/$caseId") },
+                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
             )
         }
+        
         composable(Screen.Agenda.route) {
             AgendaScreen(
                 onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToClients = { navController.navigate(Screen.Clients.route) }
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) },
+                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") },
+                onNavigateToEditEvent = { eventId -> navController.navigate("edit_event/$eventId") }
             )
         }
+        
         composable(Screen.Clients.route) {
             ClientsScreen(
                 onLogout = onLogout,
@@ -144,6 +166,7 @@ fun LegallyApp() {
                 onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
             )
         }
+        
         composable(Screen.NewCase.route) {
             NewCaseScreen(
                 onBackClick = { navController.popBackStack() },

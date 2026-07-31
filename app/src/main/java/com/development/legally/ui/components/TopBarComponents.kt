@@ -15,20 +15,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.development.legally.R
 
-// 1. USUARIO (LOGOUT CON CONFIRMACIÓN)
 @Composable
 fun UserAction(
     onLogoutConfirm: () -> Unit,
@@ -75,7 +75,6 @@ fun UserAction(
     }
 }
 
-// 2. NOTIFICACIONES (CORREGIDO: ICONO DINÁMICO Y POSICIÓN)
 @Composable
 fun NotificationAction(
     modifier: Modifier = Modifier,
@@ -93,11 +92,9 @@ fun NotificationAction(
     ) {
         Icon(
             painter = painterResource(
-                // Alterna entre el icono relleno (on) y el contorno transparente (off)
                 id = if (isExpanded) R.drawable.ic_notifications_on else R.drawable.ic_notifications_off
             ),
             contentDescription = "Notificaciones",
-            // Usamos Unspecified para que se vea el color/transparencia real del XML
             tint = Color.Unspecified,
             modifier = Modifier.fillMaxSize()
         )
@@ -106,13 +103,12 @@ fun NotificationAction(
             Popup(
                 alignment = Alignment.TopEnd,
                 onDismissRequest = { isExpanded = false },
-                // Desplazamos el panel hacia abajo para que el icono de la campana sea clickable para cerrar
-                offset = IntOffset(0, with(density) { 35.dp.roundToPx() })
+                offset = IntOffset(0, with(density) { 45.dp.roundToPx() })
             ) {
                 Card(
                     modifier = Modifier
                         .width(280.dp)
-                        .padding(end = 10.dp)
+                        .padding(end = 12.dp)
                         .border(1.dp, goldColor, RoundedCornerShape(8.dp)),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
                 ) {
@@ -131,7 +127,6 @@ fun NotificationAction(
     }
 }
 
-// 3. BARRA DE BÚSQUEDA
 @Composable
 fun MainSearchBar(
     title: String,
@@ -140,6 +135,18 @@ fun MainSearchBar(
     goldColor: Color = Color(0xFF9E8D44)
 ) {
     var query by remember { mutableStateOf("") }
+    val keyboardController = LocalSoftwareKeyboardController.current
+    
+    // Detectar visibilidad del teclado
+    val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
+
+    // Si el teclado se cierra manualmente, cancelamos la búsqueda
+    LaunchedEffect(isKeyboardVisible) {
+        if (!isKeyboardVisible && query.isNotEmpty()) {
+            query = ""
+            onSearch("")
+        }
+    }
 
     Box(
         modifier = modifier
@@ -151,6 +158,7 @@ fun MainSearchBar(
         contentAlignment = Alignment.CenterStart
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
+            // "X" a la izquierda: limpia y oculta teclado
             Icon(
                 imageVector = Icons.Default.Close,
                 contentDescription = "Cerrar",
@@ -160,10 +168,11 @@ fun MainSearchBar(
                     .clickable { 
                         query = ""
                         onSearch("")
+                        keyboardController?.hide()
                     }
             )
             
-            Box(modifier = Modifier.weight(1f).padding(horizontal = 8.dp)) {
+            Box(modifier = Modifier.weight(1f).padding(horizontal = 10.dp)) {
                 if (query.isEmpty()) {
                     OutlinedText(
                         text = title,
@@ -192,13 +201,15 @@ fun MainSearchBar(
                 tint = goldColor,
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable { onSearch(query) }
+                    .clickable { 
+                        onSearch(query)
+                        keyboardController?.hide()
+                    }
             )
         }
     }
 }
 
-// 4. TITULO DE SECCIÓN
 @Composable
 fun SectionHeader(
     title: String,
@@ -206,9 +217,7 @@ fun SectionHeader(
     goldColor: Color = Color(0xFF9E8D44)
 ) {
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .alpha(1f),
+        modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         OutlinedText(
@@ -217,7 +226,7 @@ fun SectionHeader(
             outlineColor = goldColor,
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            textAlign = TextAlign.Center,
             strokeWidth = 3f
         )
     }

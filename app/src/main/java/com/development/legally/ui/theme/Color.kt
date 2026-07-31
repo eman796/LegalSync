@@ -13,6 +13,6 @@ val CaseBackground = Color(0xFF0B1015)
 
 // Figma Colors
 val FigmaGold = Color(0xFF9E8D44)
-val FigmaBackground = Color(0xFF1C2632)
+val FigmaBackground = Color(0xFF1A2530)
 val FigmaFieldBackground = Color(0xFF171E27)
 val FigmaRed = Color(0xFFF50505)

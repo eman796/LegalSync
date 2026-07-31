@@ -54,7 +54,7 @@ fun CasesScreen(
                     onClientesClick = onNavigateToClients
                 )
             },
-            containerColor = Color(0xFF1C2632)
+            containerColor = FigmaBackground
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -71,12 +71,45 @@ fun CasesScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Filtros con el diseño de Figma (Gris azulado)
+                // SECCIÓN FILTROS (Clase reutilizable)
                 FilterSectionRow(title = "Filtrar por:") {
-                    FilterDropdown(label = "Fecha", options = listOf("Recientes", "Antiguos"), onOptionSelected = {})
-                    FilterDropdown(label = "Cliente", options = listOf("A-Z", "Z-A"), onOptionSelected = {})
-                    FilterDropdown(label = "Tipo", options = listOf("Penal", "Civil", "Laboral"), onOptionSelected = {})
-                    FilterDropdown(label = "URGENTE", options = listOf("Sí", "No"), isUrgent = true, onOptionSelected = {})
+                    FilterDropdown(
+                        label = "Fecha", 
+                        options = listOf("Hoy", "Ayer", "Esta semana", "Este mes"), 
+                        onOptionSelected = {}
+                    )
+                    FilterDropdown(
+                        label = "Cliente", 
+                        options = listOf("Recientes", "A-Z"), 
+                        onOptionSelected = {}
+                    )
+                    FilterDropdown(
+                        label = "Tipo", 
+                        options = listOf("Penal", "Civil", "Laboral", "Familia"), 
+                        onOptionSelected = {}
+                    )
+                    FilterDropdown(
+                        label = "URGENTE", 
+                        options = listOf("Sí", "No"), 
+                        isUrgent = true, 
+                        onOptionSelected = {}
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // NUEVA SECCIÓN: ORDENAR POR
+                FilterSectionRow(title = "Ordenar por:") {
+                    FilterDropdown(
+                        label = "Actualización", 
+                        options = listOf("Más recientes primero", "Más antiguos primero"), 
+                        onOptionSelected = {}
+                    )
+                    FilterDropdown(
+                        label = "Expediente", 
+                        options = listOf("Número (A-Z)", "Número (Z-A)"), 
+                        onOptionSelected = {}
+                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -87,13 +120,12 @@ fun CasesScreen(
                     "25-002920-0175-PE" to "Rodrigo Arias Sánchez vs STEPHAN"
                 )
 
-                Box(modifier = Modifier.fillMaxWidth().weight(1f).background(Color(0xFF171E27))) {
+                Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(dummyCases) { (id, desc) ->
-                            // Uso de la clase Maestra de Expedientes
                             MasterCaseItem(
                                 caseNumber = id,
                                 description = desc,
@@ -115,5 +147,13 @@ fun CasesScreen(
                 onNewCase = { showNewMenu = false; onNavigateToNewCase() }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CasesScreenPreview() {
+    LegallyTheme {
+        CasesScreen()
     }
 }

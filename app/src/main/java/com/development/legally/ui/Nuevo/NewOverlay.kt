@@ -28,13 +28,14 @@ private val CancelRed = Color(0xFFE53935)
 
 @Composable
 fun NewOverlay(
+    modifier: Modifier = Modifier,
     onClose: () -> Unit = {},
     onNewClient: () -> Unit = {},
     onNewEvent: () -> Unit = {},
     onNewCase: () -> Unit = {}
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(OverlayBackground.copy(alpha = 0.95f))
             .clickable(onClick = onClose)
@@ -44,16 +45,13 @@ fun NewOverlay(
             val centerX = size.width / 2
             val centerY = size.height - 100.dp.toPx()
 
-            // Línea a Evento (Arriba)
             drawLine(color = OverlayGold, start = Offset(centerX, centerY - 40.dp.toPx()), end = Offset(centerX, centerY - 130.dp.toPx()), strokeWidth = 2.dp.toPx())
-            // Línea a Cliente (Derecha)
             drawLine(color = OverlayGold, start = Offset(centerX + 30.dp.toPx(), centerY - 35.dp.toPx()), end = Offset(centerX + 100.dp.toPx(), centerY - 75.dp.toPx()), strokeWidth = 2.dp.toPx())
-            // Línea a Caso (Izquierda)
             drawLine(color = OverlayGold, start = Offset(centerX - 30.dp.toPx(), centerY - 35.dp.toPx()), end = Offset(centerX - 100.dp.toPx(), centerY - 75.dp.toPx()), strokeWidth = 2.dp.toPx())
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            // 1. NUEVO EVENTO
+            // NUEVO EVENTO
             NewActionItem(
                 icon = { Icon(painterResource(id = R.drawable.ic_tarjeta_audiencias), contentDescription = null, tint = OverlayGold, modifier = Modifier.size(32.dp)) },
                 label = "Evento",
@@ -61,7 +59,7 @@ fun NewOverlay(
                 onClick = onNewEvent
             )
 
-            // 2. NUEVO CLIENTE (Con el botón de añadir cuadrado)
+            // NUEVO CLIENTE (BOTÓN AÑADIR SOLICITADO)
             NewActionItem(
                 icon = {
                     Box(
@@ -76,7 +74,7 @@ fun NewOverlay(
                 onClick = onNewClient
             )
 
-            // 3. NUEVO EXPEDIENTE
+            // NUEVO EXPEDIENTE
             NewActionItem(
                 icon = { Icon(painterResource(id = R.drawable.ic_tarjeta_expedientes), contentDescription = null, tint = OverlayGold, modifier = Modifier.size(32.dp)) },
                 label = "Expediente",
