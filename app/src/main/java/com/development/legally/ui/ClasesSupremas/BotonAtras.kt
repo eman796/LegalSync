@@ -1,4 +1,4 @@
-package com.development.legally.ui.components
+package com.development.legally.ui.ClasesSupremas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -15,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-
+//Este es el tipico "Boton atras". Se usa como clase para no estar repitiendo codigo, dado que se usa en casi todas las pantallas de la aplicacion. Nada especial.
 @Composable
 fun BackButton(
     onClick: () -> Unit,

@@ -1,7 +1,6 @@
-package com.development.legally.ui.components
+package com.development.legally.ui.ClasesSupremas
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -22,11 +21,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
+//Esta clase lo que hace es que se pongan en una sola clase, cada item de las pantallas de Agenda, Expediente y cliente
 
-/**
- * Clase Maestra para Clientes (Combinación diseño Expediente + Datos Cliente)
- */
 @Composable
+//Clase maestra de item de cliente.
 fun MasterClientItem(
     name: String,
     activeCount: String,
@@ -49,11 +47,9 @@ fun MasterClientItem(
             modifier = Modifier.padding(16.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // BLOQUE DORADO A LA IZQUIERDA
             Box(
                 modifier = Modifier
                     .size(42.dp)
-                    .background(goldColor, RoundedCornerShape(4.dp))
             )
             
             Spacer(modifier = Modifier.width(16.dp))
@@ -110,9 +106,6 @@ fun MasterClientItem(
     }
 }
 
-/**
- * Clase Maestra para Expedientes
- */
 @Composable
 fun MasterCaseItem(
     caseNumber: String,

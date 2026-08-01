@@ -24,7 +24,7 @@ import com.development.legally.R
 import com.development.legally.data.model.FollowUp
 import com.development.legally.ui.theme.LegallyTheme
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
-import com.development.legally.ui.components.MainSearchBar
+import com.development.legally.ui.ClasesSupremas.MainSearchBar
 
 private val FigmaBackground = Color(0xFF1C2632)
 private val FigmaGold = Color(0xFF9E8D44)

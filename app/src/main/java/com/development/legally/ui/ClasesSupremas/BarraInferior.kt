@@ -1,4 +1,4 @@
-package com.development.legally.ui.components
+package com.development.legally.ui.ClasesSupremas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.development.legally.R
-
+//Esta clase es la barra inferior, que contiene los 5 botones principales
 @Composable
 fun UserAction(
     onLogoutConfirm: () -> Unit,

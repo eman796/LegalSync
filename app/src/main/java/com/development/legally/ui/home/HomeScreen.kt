@@ -11,7 +11,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
@@ -29,7 +28,7 @@ import com.development.legally.R
 import com.development.legally.ui.Nuevo.NewOverlay
 import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
-import com.development.legally.ui.components.*
+import com.development.legally.ui.ClasesSupremas.*
 
 @Composable
 fun HomeScreen(
@@ -246,7 +245,7 @@ fun RecentCasesList(onCaseClick: (String) -> Unit) {
 fun RecentCaseItem(id: String, onClick: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         Box(modifier = Modifier.size(42.dp).background(FigmaGold.copy(alpha = 0.1f), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-            Icon(painter = painterResource(id = R.drawable.ic_gavel), contentDescription = null, tint = FigmaGold, modifier = Modifier.size(24.dp))
+            Icon(painter = painterResource(id = R.drawable.ic_card_folder), contentDescription = null, tint = FigmaGold, modifier = Modifier.size(24.dp))
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {

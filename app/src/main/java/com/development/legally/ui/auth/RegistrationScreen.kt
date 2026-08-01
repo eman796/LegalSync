@@ -9,19 +9,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.development.legally.R
-import com.development.legally.ui.components.BackButton
-import com.development.legally.ui.components.OutlinedText
+import com.development.legally.ui.ClasesSupremas.BackButton
+import com.development.legally.ui.ClasesSupremas.OutlinedText
 import com.development.legally.ui.theme.LegallyTheme
 
 @Composable

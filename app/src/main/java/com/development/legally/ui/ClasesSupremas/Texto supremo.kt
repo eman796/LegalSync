@@ -1,4 +1,4 @@
-package com.development.legally.ui.components
+package com.development.legally.ui.ClasesSupremas
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.Text
@@ -12,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
-
+//Esta es una clase de un texto especifico que se usa en algunas partes de la GUI
 @Composable
 fun OutlinedText(
     text: String,

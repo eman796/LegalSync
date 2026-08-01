@@ -1,4 +1,4 @@
-package com.development.legally.ui.components
+package com.development.legally.ui.ClasesSupremas
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,7 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
+// Dado que se usa en tres clases distintas, se opto por hacer de esto una clase. En este caso, son los "Filtrar por" y "Ordenar por" de pantallas como "Expediente", "Agenda" y "Clientes"
 @Composable
 fun FilterDropdown(
     label: String,
