@@ -22,6 +22,8 @@ fun ClientsScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
+    onNavigateToNewClient: () -> Unit = {},
+    onNavigateToNewEvent: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToEditClient: (String) -> Unit = {},
     viewModel: ClientViewModel = viewModel()
@@ -41,7 +43,7 @@ fun ClientsScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     UserAction(onLogoutConfirm = onLogout)
-                    SectionHeader(title = "Clientes del abogad@", modifier = Modifier.weight(1f))
+                    SectionHeader(title = "Clientes", modifier = Modifier.weight(1f))
                     NotificationAction()
                 }
             },
@@ -57,51 +59,21 @@ fun ClientsScreen(
             },
             containerColor = FigmaBackground
         ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 17.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 17.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
-                
                 MainSearchBar(title = "Buscar clientes...", onSearch = { viewModel.searchClients(it) })
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Filtros con la clase reutilizable que recibe ArrayList
-                FilterSectionRow(title = "Filtrar por:") {
-                    FilterDropdown(label = "Fecha", options = listOf("Recientes", "Antiguos"), onOptionSelected = {})
-                    FilterDropdown(label = "Cliente", options = listOf("A-Z", "Z-A"), onOptionSelected = {})
-                    FilterDropdown(label = "Tipo", options = listOf("Física", "Jurídica"), onOptionSelected = {})
-                    FilterDropdown(label = "URGENTE", options = listOf("Sí", "No"), isUrgent = true, onOptionSelected = {})
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                FilterSectionRow(title = "Ordenar por:") {
-                    FilterDropdown(label = "Nombre", options = listOf("A-Z", "Z-A"), onOptionSelected = {})
-                    FilterDropdown(label = "Cliente", options = listOf("A-Z", "Z-A"), onOptionSelected = {})
-                    FilterDropdown(label = "Tipo", options = listOf("Física", "Jurídica"), onOptionSelected = {})
-                    FilterDropdown(label = "URGENTE", options = listOf("Sí", "No"), isUrgent = true, onOptionSelected = {})
-                }
-
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {
                     if (uiState.loading) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = FigmaGold)
                     } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
+                        LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(uiState.filtered) { client ->
-                                // Uso de la Clase Maestra de Items
                                 MasterClientItem(
                                     name = "${client.name} ${client.lastName}",
                                     activeCount = "5 expedientes activos",
-                                    summary = "1 sucesorio, 1 posesorio, 1 divorcio, 1 pensión alimentaria",
+                                    summary = "Gestión legal activa",
                                     status = "Activo",
                                     onClick = { onNavigateToEditClient(client.id) }
                                 )
@@ -115,9 +87,18 @@ fun ClientsScreen(
         if (showNewMenu) {
             NewOverlay(
                 onClose = { showNewMenu = false },
-                onNewClient = { showNewMenu = false; onNavigateToEditClient("new") },
-                onNewEvent = { showNewMenu = false },
-                onNewCase = { showNewMenu = false; onNavigateToNewCase() }
+                onNewClient = {
+                    showNewMenu = false
+                    onNavigateToNewClient()
+                },
+                onNewEvent = {
+                    showNewMenu = false
+                    onNavigateToNewEvent()
+                },
+                onNewCase = {
+                    showNewMenu = false
+                    onNavigateToNewCase()
+                }
             )
         }
     }

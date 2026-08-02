@@ -40,7 +40,7 @@ fun NewOverlay(
             .background(OverlayBackground.copy(alpha = 0.95f))
             .clickable(onClick = onClose)
     ) {
-        // Líneas de conexión
+        // Líneas de conexión doradas
         Canvas(modifier = Modifier.fillMaxSize()) {
             val centerX = size.width / 2
             val centerY = size.height - 100.dp.toPx()
@@ -51,22 +51,22 @@ fun NewOverlay(
         }
 
         Box(modifier = Modifier.fillMaxSize()) {
-            // NUEVO EVENTO
+            // 2. NUEVO EVENTO (Central arriba)
             NewActionItem(
-                icon = { Icon(painterResource(id = R.drawable.ic_tarjeta_audiencias), contentDescription = null, tint = OverlayGold, modifier = Modifier.size(32.dp)) },
+                icon = { Icon(painterResource(id = R.drawable.ic_card_calendar), contentDescription = null, tint = OverlayGold, modifier = Modifier.size(36.dp)) },
                 label = "Evento",
                 modifier = Modifier.align(Alignment.BottomCenter).offset(y = (-185).dp),
                 onClick = onNewEvent
             )
 
-            // NUEVO CLIENTE (BOTÓN AÑADIR SOLICITADO)
+            // NUEVO CLIENTE (Derecha)
             NewActionItem(
                 icon = {
                     Box(
-                        modifier = Modifier.size(40.dp).background(OverlayGold, RoundedCornerShape(4.dp)),
+                        modifier = Modifier.size(42.dp).background(OverlayGold, RoundedCornerShape(6.dp)),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color.Black, modifier = Modifier.size(28.dp))
+                        Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color.Black, modifier = Modifier.size(30.dp))
                     }
                 },
                 label = "Cliente",
@@ -74,9 +74,9 @@ fun NewOverlay(
                 onClick = onNewClient
             )
 
-            // NUEVO EXPEDIENTE
+            // 1. NUEVO EXPEDIENTE (Izquierda - Reemplazado el cuadrado por las hojas)
             NewActionItem(
-                icon = { Icon(painterResource(id = R.drawable.ic_tarjeta_expedientes), contentDescription = null, tint = OverlayGold, modifier = Modifier.size(32.dp)) },
+                icon = { Icon(painterResource(id = R.drawable.ic_expedientes_edit), contentDescription = null, tint = OverlayGold, modifier = Modifier.size(38.dp)) },
                 label = "Expediente",
                 modifier = Modifier.align(Alignment.BottomCenter).offset(x = (-130).dp, y = (-105).dp),
                 onClick = onNewCase
@@ -119,6 +119,6 @@ private fun NewActionItem(
             icon()
         }
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = label, color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(text = label, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
 }

@@ -13,16 +13,18 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.development.legally.data.repository.AuthRepository
+import com.development.legally.ui.Editar.EditarCasoScreen
+import com.development.legally.ui.Editar.EditarClienteScreen
+import com.development.legally.ui.Editar.EditarEventoScreen
+import com.development.legally.ui.Nuevo.NuevoCasoScreen
+import com.development.legally.ui.Nuevo.NuevoClienteScreen
+import com.development.legally.ui.Nuevo.NuevoEventoScreen
 import com.development.legally.ui.agenda.AgendaScreen
-import com.development.legally.ui.agenda.EditEventScreen
 import com.development.legally.ui.auth.LoginScreen
 import com.development.legally.ui.auth.RegistrationScreen
 import com.development.legally.ui.auth.WelcomeScreen
 import com.development.legally.ui.cases.CasesScreen
-import com.development.legally.ui.cases.EditCaseScreen
-import com.development.legally.ui.cases.NewCaseScreen
 import com.development.legally.ui.clients.ClientsScreen
-import com.development.legally.ui.clients.EditClientScreen
 import com.development.legally.ui.home.HomeScreen
 import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
@@ -62,73 +64,32 @@ fun LegallyApp() {
         navController = navController,
         startDestination = startDestination
     ) {
-        composable("edit_case/{caseId}") { backStackEntry ->
-            val caseId = backStackEntry.arguments?.getString("caseId")
-            EditCaseScreen(
-                caseId = caseId,
-                onBackClick = { navController.popBackStack() },
-                onCancelClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
-            )
-        }
+        // --- RUTAS DE EDICIÓN ---
+        composable("edit_case/{caseId}") { EditarCasoScreen({navController.popBackStack()},{navController.popBackStack()},{navController.popBackStack()},{ }) }
+        composable("edit_event/{eventId}") { EditarEventoScreen({navController.popBackStack()},{navController.popBackStack()},{navController.popBackStack()},{ }) }
+        composable("edit_client/{clientId}") { EditarClienteScreen({navController.popBackStack()},{navController.popBackStack()},{navController.popBackStack()},{ }) }
 
-        composable("edit_event/{eventId}") { backStackEntry ->
-            val eventId = backStackEntry.arguments?.getString("eventId")
-            EditEventScreen(
-                eventId = eventId,
-                onBackClick = { navController.popBackStack() },
-                onCancelClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
-            )
-        }
-        
-        composable("edit_client/{clientId}") { backStackEntry ->
-            val clientId = backStackEntry.arguments?.getString("clientId")
-            EditClientScreen(
-                clientId = clientId,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToHome = { navController.navigate(Screen.Home.route) },
-                onNavigateToCases = { navController.navigate(Screen.Cases.route) },
-                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
-                onNavigateToClients = { navController.navigate(Screen.Clients.route) }
-            )
-        }
-        
-        composable(Screen.Welcome.route) {
-            WelcomeScreen(
-                onLoginClick = { navController.navigate(Screen.Login.route) },
-                onSignupClick = { navController.navigate(Screen.Registration.route) }
-            )
-        }
-        
-        composable(Screen.Login.route) {
-            LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate(Screen.Home.route) {
-                        popUpTo(Screen.Login.route) { inclusive = true }
-                    }
-                },
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-        
-        composable(Screen.Registration.route) {
-            RegistrationScreen(
-                onBackClick = { navController.popBackStack() }
-            )
-        }
-        
+        // --- RUTAS DE NUEVO ---
+        composable(Screen.NewCase.route) { NuevoCasoScreen({navController.popBackStack()},{navController.popBackStack()}) }
+        composable(Screen.NewClient.route) { NuevoClienteScreen({navController.popBackStack()},{navController.popBackStack()}) }
+        composable(Screen.NewEvent.route) { NuevoEventoScreen({navController.popBackStack()},{navController.popBackStack()}) }
+
+        composable(Screen.Welcome.route) { WelcomeScreen({navController.navigate(Screen.Login.route)} as Modifier,{navController.navigate(Screen.Registration.route)}) }
+        composable(Screen.Login.route) { LoginScreen({navController.navigate(Screen.Home.route){popUpTo(Screen.Login.route){inclusive=true}}},{navController.popBackStack()}) }
+        composable(Screen.Registration.route) { RegistrationScreen({navController.popBackStack()}) }
+
         composable(Screen.Home.route) {
             HomeScreen(
                 onLogout = onLogout,
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
-                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") },
-                onNavigateToEditCase = { caseId -> navController.navigate("edit_case/$caseId") },
-                onNavigateToEditEvent = { eventId -> navController.navigate("edit_event/$eventId") }
+                onNavigateToEditClient = { id -> navController.navigate("edit_client/$id") },
+                onNavigateToEditCase = { id -> navController.navigate("edit_case/$id") },
+                onNavigateToEditEvent = { id -> navController.navigate("edit_event/$id") }
             )
         }
         
@@ -137,10 +98,11 @@ fun LegallyApp() {
                 onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
-                onNavigateToEditCase = { caseId -> navController.navigate("edit_case/$caseId") },
-                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
+                onNavigateToEditCase = { id -> navController.navigate("edit_case/$id") }
             )
         }
         
@@ -150,28 +112,23 @@ fun LegallyApp() {
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
-                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") },
-                onNavigateToEditEvent = { eventId -> navController.navigate("edit_event/$eventId") }
+                onNavigateToEditEvent = { id -> navController.navigate("edit_event/$id") }
             )
         }
-        
+
         composable(Screen.Clients.route) {
             ClientsScreen(
                 onLogout = onLogout,
                 onNavigateToHome = { navController.navigate(Screen.Home.route) },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
-                onNavigateToEditClient = { clientId -> navController.navigate("edit_client/$clientId") }
-            )
-        }
-        
-        composable(Screen.NewCase.route) {
-            NewCaseScreen(
-                onBackClick = { navController.popBackStack() },
-                onCancelClick = { navController.popBackStack() },
-                onSaveClick = { navController.popBackStack() }
+                onNavigateToEditClient = { id -> navController.navigate("edit_client/$id") }
             )
         }
     }

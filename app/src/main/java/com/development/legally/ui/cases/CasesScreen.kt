@@ -20,6 +20,8 @@ fun CasesScreen(
     onLogout: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
+    onNavigateToNewClient: () -> Unit = {},
+    onNavigateToNewEvent: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
@@ -62,59 +64,11 @@ fun CasesScreen(
                     .padding(horizontal = 17.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                
-                MainSearchBar(
-                    title = "Buscar expedientes...",
-                    onSearch = { }
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // SECCIÓN FILTROS (Clase reutilizable)
-                FilterSectionRow(title = "Filtrar por:") {
-                    FilterDropdown(
-                        label = "Fecha", 
-                        options = listOf("Hoy", "Ayer", "Esta semana", "Este mes"), 
-                        onOptionSelected = {}
-                    )
-                    FilterDropdown(
-                        label = "Cliente", 
-                        options = listOf("Recientes", "A-Z"), 
-                        onOptionSelected = {}
-                    )
-                    FilterDropdown(
-                        label = "Tipo", 
-                        options = listOf("Penal", "Civil", "Laboral", "Familia"), 
-                        onOptionSelected = {}
-                    )
-                    FilterDropdown(
-                        label = "URGENTE", 
-                        options = listOf("Sí", "No"), 
-                        isUrgent = true, 
-                        onOptionSelected = {}
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // NUEVA SECCIÓN: ORDENAR POR
-                FilterSectionRow(title = "Ordenar por:") {
-                    FilterDropdown(
-                        label = "Actualización", 
-                        options = listOf("Más recientes primero", "Más antiguos primero"), 
-                        onOptionSelected = {}
-                    )
-                    FilterDropdown(
-                        label = "Expediente", 
-                        options = listOf("Número (A-Z)", "Número (Z-A)"), 
-                        onOptionSelected = {}
-                    )
-                }
-
+                MainSearchBar(title = "Buscar expedientes...", onSearch = { })
                 Spacer(modifier = Modifier.height(24.dp))
 
                 val dummyCases = listOf(
-                    "25-000044-033-PE" to "Christian Bullgarelli vs Federico cruz A.K.A Choreco",
+                    "25-000044-033-PE" to "Christian Bullgarelli vs Federico cruz",
                     "20-000115-1218-PE" to "Procuraduría vs Luis Guillermo Solís Rivera",
                     "25-002920-0175-PE" to "Rodrigo Arias Sánchez vs STEPHAN"
                 )
@@ -141,18 +95,19 @@ fun CasesScreen(
         if (showNewMenu) {
             NewOverlay(
                 onClose = { showNewMenu = false },
-                onNewClient = { showNewMenu = false; onNavigateToEditClient("new") },
-                onNewEvent = { showNewMenu = false },
-                onNewCase = { showNewMenu = false; onNavigateToNewCase() }
+                onNewClient = {
+                    showNewMenu = false
+                    onNavigateToNewClient()
+                },
+                onNewEvent = {
+                    showNewMenu = false
+                    onNavigateToNewEvent()
+                },
+                onNewCase = {
+                    showNewMenu = false
+                    onNavigateToNewCase()
+                }
             )
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun CasesScreenPreview() {
-    LegallyTheme {
-        CasesScreen()
     }
 }

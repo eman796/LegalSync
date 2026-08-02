@@ -23,6 +23,8 @@ fun AgendaScreen(
     onNavigateToHome: () -> Unit = {},
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
+    onNavigateToNewClient: () -> Unit = {},
+    onNavigateToNewEvent: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditClient: (String) -> Unit = {},
     onNavigateToEditEvent: (String) -> Unit = {}
@@ -41,7 +43,7 @@ fun AgendaScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     UserAction(onLogoutConfirm = onLogout)
-                    SectionHeader(title = "Agenda del abogado", modifier = Modifier.weight(1f))
+                    SectionHeader(title = "Agenda", modifier = Modifier.weight(1f))
                     NotificationAction()
                 }
             },
@@ -64,19 +66,9 @@ fun AgendaScreen(
                     .padding(horizontal = 17.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-
                 MainSearchBar(title = "Buscar eventos, tareas...", onSearch = { })
-
                 Spacer(modifier = Modifier.height(24.dp))
-
-                FilterSectionRow(title = "Filtrar por:") {
-                    FilterDropdown(label = "Fecha", options = listOf("Hoy", "Mañana", "Esta semana"), onOptionSelected = {})
-                    FilterDropdown(label = "Tipo", options = listOf("Tarea", "Audiencia", "Cita"), onOptionSelected = {})
-                    FilterDropdown(label = "URGENTE", options = listOf("Sí", "No"), isUrgent = true, onOptionSelected = {})
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
+                
                 Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {
                     AgendaList(onEventClick = onNavigateToEditEvent)
                 }
@@ -86,9 +78,18 @@ fun AgendaScreen(
         if (showNewMenu) {
             NewOverlay(
                 onClose = { showNewMenu = false },
-                onNewClient = { showNewMenu = false; onNavigateToEditClient("new") },
-                onNewEvent = { showNewMenu = false },
-                onNewCase = { showNewMenu = false; onNavigateToNewCase() }
+                onNewClient = {
+                    showNewMenu = false
+                    onNavigateToNewClient()
+                },
+                onNewEvent = {
+                    showNewMenu = false
+                    onNavigateToNewEvent()
+                },
+                onNewCase = {
+                    showNewMenu = false
+                    onNavigateToNewCase()
+                }
             )
         }
     }
@@ -117,18 +118,4 @@ fun AgendaList(onEventClick: (String) -> Unit) {
     }
 }
 
-data class AgendaItemData(
-    val id: String,
-    val duration: String,
-    val caseId: String, 
-    val description: String, 
-    val statusColor: Color
-)
-
-@Preview(showBackground = true)
-@Composable
-fun AgendaScreenPreview() {
-    LegallyTheme {
-        AgendaScreen()
-    }
-}
+data class AgendaItemData(val id: String, val duration: String, val caseId: String, val description: String, val statusColor: Color)

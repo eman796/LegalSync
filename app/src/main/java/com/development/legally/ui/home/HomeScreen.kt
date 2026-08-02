@@ -36,6 +36,8 @@ fun HomeScreen(
     onLogout: () -> Unit = {},
     onNavigateToCases: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
+    onNavigateToNewClient: () -> Unit = {},
+    onNavigateToNewEvent: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditClient: (String) -> Unit = {},
@@ -125,7 +127,6 @@ fun HomeScreen(
                     }
                 }
 
-                // MÓDULO: TAREAS PENDIENTES (3 elementos)
                 item {
                     Column {
                         Row(
@@ -154,8 +155,14 @@ fun HomeScreen(
         if (showNewMenu) {
             NewOverlay(
                 onClose = { showNewMenu = false },
-                onNewClient = { showNewMenu = false },
-                onNewEvent = { showNewMenu = false },
+                onNewClient = {
+                    showNewMenu = false
+                    onNavigateToNewClient()
+                },
+                onNewEvent = {
+                    showNewMenu = false
+                    onNavigateToNewEvent()
+                },
                 onNewCase = {
                     showNewMenu = false
                     onNavigateToNewCase()

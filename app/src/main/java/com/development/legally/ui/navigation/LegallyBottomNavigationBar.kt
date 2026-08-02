@@ -99,7 +99,7 @@ fun LegallyBottomNavigationBar(
             )
         }
 
-        // Botón Crear (Central)
+        // Botón Crear (Central) - Etiqueta corregida según imagen (Pill oscura con borde dorado)
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -124,12 +124,19 @@ fun LegallyBottomNavigationBar(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
+            // ETIQUETA "CREAR" REVISADA (Capsula oscura con borde dorado solicitado)
             Box(
                 modifier = Modifier
-                    .background(FigmaGold, RoundedCornerShape(12.dp))
-                    .padding(horizontal = 12.dp, vertical = 2.dp)
+                    .background(FigmaNavBackground, RoundedCornerShape(10.dp))
+                    .border(1.dp, FigmaGold, RoundedCornerShape(10.dp))
+                    .padding(horizontal = 14.dp, vertical = 2.dp)
             ) {
-                Text(text = "Crear", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = "Crear", 
+                    color = Color.White, 
+                    fontSize = 12.sp, 
+                    fontWeight = FontWeight.Normal
+                )
             }
         }
     }
@@ -150,7 +157,6 @@ private fun NavItem(
             .clickable { onClick() }
             .padding(vertical = 4.dp)
     ) {
-        // Icono On/Off
         Icon(
             painter = painterResource(id = if (isSelected) iconOn else iconOff),
             contentDescription = label,
@@ -158,7 +164,6 @@ private fun NavItem(
             modifier = Modifier.size(24.dp)
         )
         Spacer(modifier = Modifier.height(6.dp))
-        // Diseño de la pastilla (Pill)
         Box(
             modifier = Modifier
                 .background(

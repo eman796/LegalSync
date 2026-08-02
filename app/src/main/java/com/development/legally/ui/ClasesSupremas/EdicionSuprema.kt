@@ -48,7 +48,9 @@ object EdicionSuprema {
         contenido: @Composable ColumnScope.() -> Unit
     ) {
         var mostrarDialogoCancelar by remember { mutableStateOf(false) }
+        var mostrarDialogoEliminar by remember { mutableStateOf(false) }
 
+        // Diálogo de Cancelación
         if (mostrarDialogoCancelar) {
             AlertDialog(
                 onDismissRequest = { mostrarDialogoCancelar = false },
@@ -68,6 +70,31 @@ object EdicionSuprema {
                 dismissButton = {
                     TextButton(onClick = { mostrarDialogoCancelar = false }) {
                         Text("NO", color = FigmaGold)
+                    }
+                }
+            )
+        }
+
+        // Diálogo de Eliminación (Punto 1 solicitado)
+        if (mostrarDialogoEliminar) {
+            AlertDialog(
+                onDismissRequest = { mostrarDialogoEliminar = false },
+                containerColor = Color(0xFF1C2632),
+                titleContentColor = Color.White,
+                textContentColor = Color.White,
+                title = { Text("¿Eliminar elemento?") },
+                text = { Text("Esta acción no se puede deshacer. ¿Estás seguro de que deseas eliminar este registro permanentemente?") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        mostrarDialogoEliminar = false
+                        onEliminar()
+                    }) {
+                        Text("ELIMINAR", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { mostrarDialogoEliminar = false }) {
+                        Text("CANCELAR", color = FigmaGold)
                     }
                 }
             )
@@ -144,9 +171,9 @@ object EdicionSuprema {
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // BOTÓN ELIMINAR (Dinámico)
+                    // BOTÓN ELIMINAR (Dinámico con Advertencia)
                     Button(
-                        onClick = onEliminar,
+                        onClick = { mostrarDialogoEliminar = true },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(52.dp)
