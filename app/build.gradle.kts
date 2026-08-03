@@ -1,12 +1,16 @@
+// Archivo: app/build.gradle.kts
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.compose.compiler)
-    kotlin("kapt")
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.services) // Este es el que activa Firebase
 }
 
-android {
+kotlin {
+    jvmToolchain(17)
+}
+
+extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
     namespace = "com.development.legally"
     compileSdk = 35
 
@@ -33,12 +37,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    kotlin {
-        jvmToolchain(11)
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildFeatures {
@@ -46,9 +46,7 @@ android {
         compose = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.15"
-    }
+    // composeOptions is no longer needed with the Kotlin Compose plugin
 
     packaging {
         resources {
@@ -73,13 +71,17 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.navigation.compose)
 
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    // Serialization
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     // Firebase
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
+    implementation("com.google.firebase:firebase-dataconnect")
+
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
     // Navigation
     implementation(libs.navigation.fragment)

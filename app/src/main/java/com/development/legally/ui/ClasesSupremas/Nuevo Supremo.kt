@@ -157,7 +157,8 @@ fun FormElement(
     width: Dp = Dp.Unspecified,
     height: Dp = 50.dp,
     leadingIcon: (@Composable () -> Unit)? = null,
-    maxChars: Int? = null
+    maxChars: Int? = null,
+    onClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -173,7 +174,7 @@ fun FormElement(
                 modifier = Modifier.fillMaxWidth().height(height)
                     .background(FigmaFieldBackground, RoundedCornerShape(12.dp))
                     .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                    .clickable { /* Acción para abrir lista */ }
+                    .clickable(enabled = onClick != null) { onClick?.invoke() }
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
@@ -219,5 +220,37 @@ fun FormElement(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun BaseFormScreenPreview() {
+    LegallyTheme {
+        BaseFormScreen(
+            title = "Nuevo Supremo",
+            saveButtonLabel = "Guardar Cambios",
+            onBackClick = {},
+            onCancelConfirm = {},
+            onSaveClick = {},
+            content = {
+                FormSectionHeader(title = "Datos del Formulario")
+                FormElement(
+                    label = "Nombre Completo",
+                    placeholder = "Ingrese su nombre",
+                    type = FormDataType.STRING,
+                    value = "",
+                    onValueChange = {}
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                FormElement(
+                    label = "Edad",
+                    placeholder = "Ej. 25",
+                    type = FormDataType.INTEGER,
+                    value = "",
+                    onValueChange = {}
+                )
+            }
+        )
     }
 }

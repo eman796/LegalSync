@@ -119,3 +119,19 @@ fun AgendaList(onEventClick: (String) -> Unit) {
 }
 
 data class AgendaItemData(val id: String, val duration: String, val caseId: String, val description: String, val statusColor: Color)
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+fun AgendaScreenPreview() {
+    LegallyTheme {
+        AgendaScreen()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AgendaListPreview() {
+    LegallyTheme {
+        AgendaList(onEventClick = {})
+    }
+}
