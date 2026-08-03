@@ -26,17 +26,14 @@ import com.development.legally.R
 import com.development.legally.ui.theme.FigmaBackground
 import com.development.legally.ui.theme.FigmaGold
 import com.development.legally.ui.theme.LegallyTheme
+import java.text.SimpleDateFormat
+import java.util.*
 
 private val FigmaTextWhite = Color(0xFFFFFFFF)
 private val FigmaFieldBackground = Color(0xFF171E27)
 
-// Definición de tipos de datos solicitados
-enum class FormDataType { STRING, INTEGER, LIST }
+enum class FormDataType { STRING, INTEGER, LIST, DATETIME }
 
-/**
- * PANTALLA BASE SUPREMA
- * Contiene: Flecha, Título dinámico, Botón Cancelar (con aviso) y Botón Guardar fijo.
- */
 @Composable
 fun BaseFormScreen(
     title: String,
@@ -76,7 +73,6 @@ fun BaseFormScreen(
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 18.dp)) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            // BARRA SUPERIOR (Flecha, Título, Cancelar)
             Row(modifier = Modifier.fillMaxWidth().height(32.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_arrow_back),
@@ -104,13 +100,11 @@ fun BaseFormScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // CONTENIDO SCROLLEABLE
             Column(modifier = Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                 content()
                 Spacer(modifier = Modifier.height(32.dp))
             }
 
-            // BOTÓN GUARDAR FIJO
             Button(
                 onClick = onSaveClick,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp).height(48.dp),
@@ -125,10 +119,6 @@ fun BaseFormScreen(
     }
 }
 
-/**
- * 1. TÍTULO DE SECCIÓN
- * Parámetros: Título (String) y Logo opcional.
- */
 @Composable
 fun FormSectionHeader(title: String, icon: (@Composable () -> Unit)? = null) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().padding(vertical = 12.dp)) {
@@ -140,10 +130,7 @@ fun FormSectionHeader(title: String, icon: (@Composable () -> Unit)? = null) {
     }
 }
 
-/**
- * 2. ELEMENTO (JTextField Equivalente)
- * Parámetros: Título, Placeholder, Tipo de dato, Posición (Padding/Offset), Dimensiones (W, H).
- */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FormElement(
     label: String,
@@ -158,8 +145,78 @@ fun FormElement(
     height: Dp = 50.dp,
     leadingIcon: (@Composable () -> Unit)? = null,
     maxChars: Int? = null,
-    onClick: (() -> Unit)? = null
+    onClick: (() -> Unit)? = null,
+    options: List<String>? = null
 ) {
+    var expanded by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+    var tempDate by remember { mutableStateOf("") }
+
+    // 1. Selector de Fecha
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState()
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let { millis ->
+                        tempDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
+                        showDatePicker = false
+                        showTimePicker = true // Al aceptar fecha, abrimos reloj
+                    }
+                }) {
+                    Text("SIGUIENTE", color = FigmaGold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) {
+                    Text("CANCELAR", color = Color.Gray)
+                }
+            },
+            colors = DatePickerDefaults.colors(containerColor = Color(0xFF1C2632))
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
+    // 2. Selector de Hora
+    if (showTimePicker) {
+        val timePickerState = rememberTimePickerState()
+        AlertDialog(
+            onDismissRequest = { showTimePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    val formattedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    onValueChange("$tempDate $formattedTime")
+                    showTimePicker = false
+                }) {
+                    Text("ACEPTAR", color = FigmaGold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTimePicker = false }) {
+                    Text("ATRÁS", color = Color.Gray)
+                }
+            },
+            containerColor = Color(0xFF1C2632),
+            text = {
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                    TimePicker(
+                        state = timePickerState,
+                        colors = TimePickerDefaults.colors(
+                            clockDialColor = Color(0xFF0D1117),
+                            selectorColor = FigmaGold,
+                            containerColor = Color(0xFF1C2632),
+                            periodSelectorSelectedContainerColor = FigmaGold,
+                            timeSelectorSelectedContainerColor = FigmaGold
+                        )
+                    )
+                }
+            }
+        )
+    }
+
     Column(
         modifier = modifier
             .padding(start = posX, top = posY)
@@ -169,55 +226,91 @@ fun FormElement(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (type == FormDataType.LIST) {
+        if (type == FormDataType.LIST || type == FormDataType.DATETIME) {
             Box(
                 modifier = Modifier.fillMaxWidth().height(height)
                     .background(FigmaFieldBackground, RoundedCornerShape(12.dp))
                     .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                    .clickable(enabled = onClick != null) { onClick?.invoke() }
+                    .clickable { 
+                        if (type == FormDataType.DATETIME) {
+                            showDatePicker = true
+                        } else if (options != null) {
+                            expanded = true
+                        }
+                        onClick?.invoke() 
+                    }
                     .padding(horizontal = 12.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                         if (leadingIcon != null) {
                             leadingIcon()
                             Spacer(modifier = Modifier.width(8.dp))
                         }
-                        Text(text = if (value.isEmpty()) placeholder else value, color = Color.White.copy(alpha = if(value.isEmpty()) 0.5f else 1f), fontSize = 14.sp)
+                        Text(
+                            text = if (value.isEmpty()) placeholder else value, 
+                            color = Color.White.copy(alpha = if(value.isEmpty()) 0.5f else 1f), 
+                            fontSize = 14.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
                     }
-                    Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = FigmaGold, modifier = Modifier.size(16.dp))
+                    
+                    val iconRes = if (type == FormDataType.DATETIME) R.drawable.ic_card_clock_figma else R.drawable.ic_arrow_right_gold
+                    Icon(
+                        painter = painterResource(id = iconRes), 
+                        contentDescription = null, 
+                        tint = FigmaGold, 
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                if (options != null) {
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(FigmaFieldBackground)
+                    ) {
+                        options.forEach { option ->
+                            DropdownMenuItem(
+                                text = { Text(option, color = Color.White) },
+                                onClick = {
+                                    onValueChange(option)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
                 }
             }
         } else {
-            Column {
-                OutlinedTextField(
-                    value = value,
-                    onValueChange = { if (maxChars == null || it.length <= maxChars) onValueChange(it) },
-                    modifier = Modifier.fillMaxWidth().height(height),
-                    placeholder = { Text(text = placeholder, color = Color.Gray.copy(alpha = 0.5f), fontSize = 14.sp) },
-                    leadingIcon = leadingIcon,
-                    keyboardOptions = KeyboardOptions(keyboardType = if (type == FormDataType.INTEGER) KeyboardType.Number else KeyboardType.Text),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedContainerColor = FigmaFieldBackground,
-                        unfocusedContainerColor = FigmaFieldBackground,
-                        focusedBorderColor = FigmaGold,
-                        unfocusedBorderColor = Color.White.copy(alpha = 0.1f)
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    singleLine = height < 80.dp
+            OutlinedTextField(
+                value = value,
+                onValueChange = { if (maxChars == null || it.length <= maxChars) onValueChange(it) },
+                modifier = Modifier.fillMaxWidth().height(height),
+                placeholder = { Text(text = placeholder, color = Color.Gray.copy(alpha = 0.5f), fontSize = 14.sp) },
+                leadingIcon = leadingIcon,
+                keyboardOptions = KeyboardOptions(keyboardType = if (type == FormDataType.INTEGER) KeyboardType.Number else KeyboardType.Text),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = Color.White,
+                    unfocusedTextColor = Color.White,
+                    focusedContainerColor = FigmaFieldBackground,
+                    unfocusedContainerColor = FigmaFieldBackground,
+                    focusedBorderColor = FigmaGold,
+                    unfocusedBorderColor = Color.White.copy(alpha = 0.1f)
+                ),
+                shape = RoundedCornerShape(12.dp),
+                singleLine = height < 80.dp
+            )
+            if (maxChars != null) {
+                Text(
+                    text = "Caracteres: ${value.length} de $maxChars",
+                    color = Color.Gray,
+                    fontSize = 10.sp,
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                    textAlign = TextAlign.End
                 )
-                if (maxChars != null) {
-                    Text(
-                        text = "Caracteres: ${value.length} de $maxChars",
-                        color = Color.Gray,
-                        fontSize = 10.sp,
-                        modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
-                        textAlign = TextAlign.End
-                    )
-                }
             }
         }
     }
@@ -235,21 +328,7 @@ fun BaseFormScreenPreview() {
             onSaveClick = {},
             content = {
                 FormSectionHeader(title = "Datos del Formulario")
-                FormElement(
-                    label = "Nombre Completo",
-                    placeholder = "Ingrese su nombre",
-                    type = FormDataType.STRING,
-                    value = "",
-                    onValueChange = {}
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                FormElement(
-                    label = "Edad",
-                    placeholder = "Ej. 25",
-                    type = FormDataType.INTEGER,
-                    value = "",
-                    onValueChange = {}
-                )
+                FormElement(label = "Cita", placeholder = "00/00/0000 00:00", type = FormDataType.DATETIME, value = "", onValueChange = {})
             }
         )
     }

@@ -53,7 +53,7 @@ fun NuevoCasoScreen(
                     .document(numeroExpediente + " - " + tituloCaso)
                     .set(casoData)
                     .addOnSuccessListener {
-                        onSave() // Llama al callback para navegar hacia atrás o mostrar éxito
+                        onSave()
                     }
                     .addOnFailureListener {
                     }

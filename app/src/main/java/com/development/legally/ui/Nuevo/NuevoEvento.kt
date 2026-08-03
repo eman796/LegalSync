@@ -5,9 +5,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.development.legally.R
 import com.development.legally.ui.ClasesSupremas.*
 import com.development.legally.ui.theme.LegallyTheme
+import com.google.firebase.firestore.FirebaseFirestore
 
 @Composable
 fun NuevoEventoScreen(onBack: () -> Unit, onSave: () -> Unit) {
@@ -33,65 +35,86 @@ fun NuevoEventoScreen(onBack: () -> Unit, onSave: () -> Unit) {
     var repetir by remember { mutableStateOf("") }
     var recordar by remember { mutableStateOf("") }
 
+    // Listas de opciones que ahora se pasan directamente al FormElement
+    val tiposOptions = listOf("Audiencia", "Cita", "Reunión", "Juicio", "Visita", "Otro")
+    val estadosOptions = listOf("Pendiente", "En Progreso", "Completado", "Cancelado", "Ocupado")
+    val duracionesOptions = listOf("30 min", "1 hora", "2 horas", "Todo el día")
+    val lugaresOptions = listOf("Oficina Principal", "Juzgado de San José", "Penal La Reforma", "Virtual", "Otro")
+    val casosOptions = listOf("25-000044-033-PE - Peculado", "En desarrollo...")
+    val repetirOptions = listOf("Nunca", "Diariamente", "Semanalmente", "Mensualmente")
+    val recordarOptions = listOf("Sin aviso", "15 min antes", "30 min antes", "1 hora antes", "24 horas antes")
+
     BaseFormScreen(
-        title = "Nuevo evento", 
-        saveButtonLabel = "Guardar evento", 
-        onBackClick = onBack, 
-        onCancelConfirm = onBack, 
-        onSaveClick = onSave
+        title = "Nuevo evento",
+        saveButtonLabel = "Guardar evento",
+        onBackClick = onBack,
+        onCancelConfirm = onBack,
+        onSaveClick = {
+            if(titulo.isNotBlank()) {
+                val db = FirebaseFirestore.getInstance()
+                val DatosEvento = hashMapOf(
+                    "titulo" to titulo,
+                    "tipo" to tipo,
+                    "estado" to estado,
+                    "fechaHora" to fechaHora,
+                    "duracion" to duracion,
+                    "lugar" to lugar,
+                    "descripcion" to descripcion,
+                    "casoRelacionado" to casoRelacionado,
+                    "repetir" to repetir,
+                    "recordar" to recordar
+                )
+                db.collection("Agenda").document(titulo + " - " + fechaHora).set(DatosEvento).addOnSuccessListener {
+                    onSave()
+                }.addOnFailureListener { }
+            }
+        }
     ) {
         FormSectionHeader(
-            title = "Información General", 
+            title = "Información General",
             icon = { Icon(painterResource(id = R.drawable.ic_expedientes_edit), null, tint = Color(0xFF9E8D44)) }
         )
 
-        FormElement("Título del Evento", "25-00000-033-PE", FormDataType.STRING, titulo, { titulo = it })
+        FormElement("Título del Evento", "Ej: Audiencia Preliminar", FormDataType.STRING, titulo, { titulo = it })
 
         Spacer(Modifier.height(16.dp))
 
         Row(Modifier.fillMaxWidth()) {
-            FormElement("Tipo de evento", "ALTÍSIMA", FormDataType.LIST, tipo, { tipo = it }, modifier = Modifier.weight(1f))
+            FormElement("Tipo de evento", "Seleccionar", FormDataType.LIST, tipo, { tipo = it }, modifier = Modifier.weight(1f), options = tiposOptions)
             Spacer(Modifier.width(16.dp))
-            FormElement("Estado", "Ocupada", FormDataType.LIST, estado, { estado = it }, modifier = Modifier.weight(1f))
+            FormElement("Estado", "Seleccionar", FormDataType.LIST, estado, { estado = it }, modifier = Modifier.weight(1f), options = estadosOptions)
         }
 
         Spacer(Modifier.height(16.dp))
 
         Row(Modifier.fillMaxWidth()) {
-            FormElement("Fecha y hora", "05/06/2025 XX:XX", FormDataType.LIST, fechaHora, { fechaHora = it }, modifier = Modifier.weight(1f))
+            FormElement("Fecha y hora", "00/00/0000 00:00", FormDataType.DATETIME, fechaHora, { fechaHora = it }, modifier = Modifier.weight(1f))
             Spacer(Modifier.width(16.dp))
-            FormElement("Duración", "05/06/2025 XX:XX", FormDataType.LIST, duracion, { duracion = it }, modifier = Modifier.weight(1f))
+            FormElement("Duración", "Seleccionar", FormDataType.LIST, duracion, { duracion = it }, modifier = Modifier.weight(1f), options = duracionesOptions)
         }
 
         Spacer(Modifier.height(16.dp))
 
-        FormElement(
-            label = "Lugar del evento", 
-            placeholder = "Penal", 
-            type = FormDataType.LIST, 
-            value = lugar, 
-            onValueChange = { lugar = it }
-        )
+        FormElement("Lugar del evento", "Seleccionar lugar", FormDataType.LIST, lugar, { lugar = it }, options = lugaresOptions)
 
         Spacer(Modifier.height(16.dp))
 
         FormElement(
-            label = "Descripción del evento", 
-            placeholder = "05/06/2025", 
-            type = FormDataType.STRING, 
-            value = descripcion, 
-            onValueChange = { descripcion = it }, 
-            height = 120.dp, 
+            label = "Descripción del evento",
+            placeholder = "Detalles adicionales...",
+            type = FormDataType.STRING,
+            value = descripcion,
+            onValueChange = { descripcion = it },
+            height = 120.dp,
             maxChars = 500
         )
 
         Spacer(Modifier.height(16.dp))
 
-        FormElement("Caso relacionado", "25-000044-033-PE - Peculado", FormDataType.LIST, casoRelacionado, { casoRelacionado = it })
+        FormElement("Caso relacionado", "Vincular expediente...", FormDataType.LIST, casoRelacionado, { casoRelacionado = it }, options = casosOptions)
 
         FormSectionHeader(title = "Quienes participan")
-        
-        // Tarjeta de participante como en la imagen
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -112,11 +135,11 @@ fun NuevoEventoScreen(onBack: () -> Unit, onSave: () -> Unit) {
         FormSectionHeader(title = "Repeticiones")
 
         Row(Modifier.fillMaxWidth()) {
-            FormElement("Repetir", "Ocupada", FormDataType.LIST, repetir, { repetir = it }, modifier = Modifier.weight(1f))
+            FormElement("Repetir", "Nunca", FormDataType.LIST, repetir, { repetir = it }, modifier = Modifier.weight(1f), options = repetirOptions)
             Spacer(Modifier.width(16.dp))
-            FormElement("Recordar antes de:", "24 horas", FormDataType.LIST, recordar, { recordar = it }, modifier = Modifier.weight(1f))
+            FormElement("Recordar antes de:", "Sin aviso", FormDataType.LIST, recordar, { recordar = it }, modifier = Modifier.weight(1f), options = recordarOptions)
         }
-        
+
         Spacer(Modifier.height(24.dp))
     }
 }
