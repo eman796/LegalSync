@@ -231,8 +231,34 @@ private fun DetailItem(label: String, value: String) {
 
 @Preview(showBackground = true)
 @Composable
-private fun ClientDetailScreenPreview() {
+fun ClientDetailScreenPreview() {
     LegallyTheme {
         ClientDetailScreen(clientId = "1")
+    }
+}
+
+private val SampleClient = Client(
+    id = "1",
+    name = "Juan",
+    lastName = "Pérez",
+    nationality = "Mexicana",
+    birthDate = "1990-01-01",
+    phone = "555-1234",
+    email = "juan.perez@example.com",
+    personType = "Física",
+    address = "Calle Falsa 123",
+    description = "Cliente recurrente para casos civiles."
+)
+
+@Preview(showBackground = true)
+@Composable
+fun ClientDetailContentPreview() {
+    LegallyTheme {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = FigmaBackground
+        ) {
+            ClientDetailContent(client = SampleClient)
+        }
     }
 }
