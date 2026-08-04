@@ -5,5 +5,6 @@ data class User(
     val name: String = "",
     val email: String = "",
     val role: String = "",  // "lawyer" o "secretary"
+    val isApproved: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )
