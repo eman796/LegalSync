@@ -28,6 +28,7 @@ import com.development.legally.ui.clients.ClientsScreen
 import com.development.legally.ui.home.HomeScreen
 import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
+import com.development.legally.ui.ClasesSupremas.UserSession
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,6 +56,7 @@ fun LegallyApp() {
 
     val onLogout = {
         authRepository.logout()
+        UserSession.clear()
         navController.navigate(Screen.Welcome.route) {
             popUpTo(0) { inclusive = true }
         }
