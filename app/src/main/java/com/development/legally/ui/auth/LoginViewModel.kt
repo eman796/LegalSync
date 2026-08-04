@@ -6,7 +6,7 @@ import com.development.legally.data.repository.AuthRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-
+import com.development.legally.ui.ClasesSupremas.UserSession
 class LoginViewModel : ViewModel() {
 
     private val authRepository = AuthRepository()
@@ -42,6 +42,7 @@ class LoginViewModel : ViewModel() {
             val result = authRepository.login(email, password)
             android.util.Log.d("LoginDebug", "Resultado: ${result.isSuccess}, Error: ${result.exceptionOrNull()?.message}")
             if (result.isSuccess) {
+                UserSession.currentUser = result.getOrNull()
                 _loginState.value = LoginState.Success
             } else {
                 _loginState.value = LoginState.Error(
