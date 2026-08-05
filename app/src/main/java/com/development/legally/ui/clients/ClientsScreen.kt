@@ -61,7 +61,23 @@ fun ClientsScreen(
         ) { paddingValues ->
             Column(modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 17.dp)) {
                 Spacer(modifier = Modifier.height(16.dp))
-                MainSearchBar(title = "Buscar clientes...", onSearch = { viewModel.searchClients(it) })
+                MainSearchBar(title = "Buscar clientes...", onSearch = { viewModel.updateSearchQuery(it) })
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                FilterSectionRow(title = "Filtrar por:") {
+                    FilterDropdown(
+                        label = "Tipo",
+                        options = listOf("Todos", "Física", "Jurídica"),
+                        onOptionSelected = { viewModel.updatePersonTypeFilter(it) }
+                    )
+                    FilterDropdown(
+                        label = "Estado",
+                        options = listOf("Todos", "Activo", "Inactivo"),
+                        onOptionSelected = { viewModel.updateStatusFilter(it) }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {

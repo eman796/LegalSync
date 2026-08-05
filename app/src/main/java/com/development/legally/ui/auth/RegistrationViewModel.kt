@@ -21,8 +21,8 @@ class RegistrationViewModel : ViewModel() {
     private val _registrationState = MutableStateFlow<RegistrationState>(RegistrationState.Idle)
     val registrationState: StateFlow<RegistrationState> = _registrationState
 
-    fun requestRegistration(fullName: String, email: String) {
-        if (fullName.isBlank() || email.isBlank()) {
+    fun requestRegistration(fullName: String, email: String, password: String) {
+        if (fullName.isBlank() || email.isBlank() || password.isBlank()) {
             _registrationState.value = RegistrationState.Error("Por favor complete todos los campos")
             return
         }
@@ -32,9 +32,14 @@ class RegistrationViewModel : ViewModel() {
             return
         }
 
+        if (password.length < 6) {
+            _registrationState.value = RegistrationState.Error("La contraseña debe tener al menos 6 caracteres")
+            return
+        }
+
         viewModelScope.launch {
             _registrationState.value = RegistrationState.Loading
-            val result = authRepository.requestRegistration(fullName, email, password = "ElizabethGrantDarkParadise")
+            val result = authRepository.requestRegistration(fullName, email, password)
             if (result.isSuccess) {
                 _registrationState.value = RegistrationState.Success
             } else {

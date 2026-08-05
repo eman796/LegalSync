@@ -1,5 +1,6 @@
 package com.development.legally.ui.auth
 
+import android.R.attr.password
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -12,11 +13,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.development.legally.R
 import com.development.legally.ui.ClasesSupremas.BackButton
 import com.development.legally.ui.ClasesSupremas.OutlinedText
 import com.development.legally.ui.theme.LegallyTheme
@@ -32,6 +36,8 @@ fun RegistrationScreen(
     
     val registrationState by registrationViewModel.registrationState.collectAsState()
     val scrollState = rememberScrollState()
+    var password by remember { mutableStateOf("") }
+    val errorMessage by remember { mutableStateOf("") }
     
     // 1. MOVIMIENTO AUTOMÁTICO: Reducimos el espacio superior cuando sale el teclado
     val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
@@ -144,11 +150,53 @@ fun RegistrationScreen(
             }
 
             Spacer(modifier = Modifier.height(48.dp))
+            Column {
+                OutlinedText(
+                    text = "Contraseña en caso de ser aprobados",
+                    fontSize = 16.sp,
+                    outlineColor = goldColor,
+                    mainColor = Color.White,
+                    strokeWidth = 3f
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(60.dp)
+                        .border(width = 1.dp, color = goldColor, shape = RoundedCornerShape(20.dp)),
+                    visualTransformation = PasswordVisualTransformation(),
+                    colors = TextFieldDefaults.colors(
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedContainerColor = inputBackgroundColor,
+                        unfocusedContainerColor = inputBackgroundColor,
+                        focusedIndicatorColor = Color.Transparent,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        cursorColor = goldColor
+                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    singleLine = true
+                )
+            }
+
+
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = Color.Red,
+                    fontSize = 12.sp,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(64.dp))
 
             // Botón de Solicitar Registro
             val isLoading = registrationState is RegistrationViewModel.RegistrationState.Loading
             Button(
-                onClick = { if (!isLoading) registrationViewModel.requestRegistration(fullName, email) },
+                onClick = { if (!isLoading) registrationViewModel.requestRegistration(fullName, email, password) },
                 enabled = !isLoading,
                 modifier = Modifier.fillMaxWidth().height(55.dp),
                 colors = ButtonDefaults.buttonColors(
@@ -181,7 +229,7 @@ fun RegistrationScreen(
         AlertDialog(
             onDismissRequest = { showSuccessDialog = false; onBackClick() },
             title = { Text("Solicitud Enviada") },
-            text = { Text("Tu solicitud de acceso ha sido enviada. Tu compañero podrá aprobarla desde la consola de Firebase Firestore.") },
+            text = { Text("Tu solicitud de acceso ha sido enviada.") },
             confirmButton = {
                 TextButton(onClick = { showSuccessDialog = false; onBackClick() }) {
                     Text("ENTENDIDO", color = goldColor)

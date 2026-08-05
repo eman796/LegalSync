@@ -16,19 +16,14 @@ class AuthRepository {
             val result = auth.signInWithEmailAndPassword(email, password).await()
             val firebaseUser = result.user ?: return Result.failure(Exception("Error al iniciar sesión"))
 
-            // Buscar el usuario en Firestore para obtener su rol
-            val userDoc = firestore.collection("users")
+            // Buscamos al usuario por su campo email (ya que el ID del documento es personalizado)
+            val searchByEmail = firestore.collection("users")
                 .whereEqualTo("email", firebaseUser.email)
                 .get()
                 .await()
-
-            val user = if (!userDoc.isEmpty) {
-                userDoc.documents[0].toObject(User::class.java) ?: User(
-                    id = firebaseUser.uid,
-                    name = firebaseUser.displayName ?: "",
-                    email = firebaseUser.email ?: "",
-                    role = "lawyer"
-                )
+            
+            val user = if (!searchByEmail.isEmpty) {
+                searchByEmail.documents[0].toObject(User::class.java)!!
             } else {
                 User(
                     id = firebaseUser.uid,
@@ -43,7 +38,7 @@ class AuthRepository {
         }
     }
 
-    // Solicitar registro — crea el usuario en Auth y guarda en Firestore con isApproved = false
+    // Solicitar registro — crea el usuario en Auth y guarda en Firestore con ID legible
     suspend fun requestRegistration(fullName: String, email: String, password: String): Result<Unit> {
         return try {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
@@ -58,7 +53,10 @@ class AuthRepository {
                 "createdAt" to System.currentTimeMillis()
             )
 
-            firestore.collection("users").document(uid).set(userData).await()
+            // ID del documento legible: "Nombre Apellido - email@ejemplo.com"
+            val customDocId = "$fullName - $email"
+            
+            firestore.collection("users").document(customDocId).set(userData).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -69,12 +67,13 @@ class AuthRepository {
     suspend fun getUserRole(): String {
         return try {
             val currentUser = auth.currentUser ?: return "secretary"
-            val userDoc = firestore.collection("users")
+            val searchByEmail = firestore.collection("users")
                 .whereEqualTo("email", currentUser.email)
                 .get()
                 .await()
-            if (!userDoc.isEmpty) {
-                userDoc.documents[0].getString("role") ?: "secretary"
+            
+            if (!searchByEmail.isEmpty) {
+                searchByEmail.documents[0].getString("role") ?: "secretary"
             } else {
                 "secretary"
             }
@@ -83,14 +82,11 @@ class AuthRepository {
         }
     }
 
-    // Cerrar sesión
     fun logout() {
         auth.signOut()
     }
 
-    // Obtener usuario actual
     fun getCurrentUser() = auth.currentUser
 
-    // Verificar si hay sesión activa
     fun isLoggedIn() = auth.currentUser != null
 }

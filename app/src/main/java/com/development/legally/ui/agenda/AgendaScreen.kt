@@ -67,6 +67,22 @@ fun AgendaScreen(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
                 MainSearchBar(title = "Buscar eventos, tareas...", onSearch = { })
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                FilterSectionRow(title = "Filtrar por:") {
+                    FilterDropdown(
+                        label = "Día",
+                        options = listOf("Hoy", "Mañana", "Esta semana", "Mes"),
+                        onOptionSelected = { /* Pendiente lógica */ }
+                    )
+                    FilterDropdown(
+                        label = "Tipo",
+                        options = listOf("Todos", "Audiencia", "Reunión", "Tarea"),
+                        onOptionSelected = { /* Pendiente lógica */ }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {

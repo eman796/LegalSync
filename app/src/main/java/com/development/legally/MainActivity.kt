@@ -76,7 +76,12 @@ fun LegallyApp() {
         composable(Screen.NewClient.route) { NuevoClienteScreen({navController.popBackStack()},{navController.popBackStack()}) }
         composable(Screen.NewEvent.route) { NuevoEventoScreen({navController.popBackStack()},{navController.popBackStack()}) }
 
-        composable(Screen.Welcome.route) { WelcomeScreen({navController.navigate(Screen.Login.route)} as Modifier,{navController.navigate(Screen.Registration.route)}) }
+        composable(Screen.Welcome.route) { 
+            WelcomeScreen(
+                onLoginClick = { navController.navigate(Screen.Login.route) },
+                onSignupClick = { navController.navigate(Screen.Registration.route) }
+            ) 
+        }
         composable(Screen.Login.route) { LoginScreen({navController.navigate(Screen.Home.route){popUpTo(Screen.Login.route){inclusive=true}}},{navController.popBackStack()}) }
         composable(Screen.Registration.route) { RegistrationScreen({navController.popBackStack()}) }
 

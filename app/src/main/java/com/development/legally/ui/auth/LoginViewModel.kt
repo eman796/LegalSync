@@ -11,7 +11,6 @@ class LoginViewModel : ViewModel() {
 
     private val authRepository = AuthRepository()
 
-    // Estados posibles del login
     sealed class LoginState {
         object Idle : LoginState()
         object Loading : LoginState()
@@ -34,7 +33,6 @@ class LoginViewModel : ViewModel() {
             return
         }
 
-        // Llamada a Firebase
         // Llamada a Firebase
         viewModelScope.launch {
             _loginState.value = LoginState.Loading

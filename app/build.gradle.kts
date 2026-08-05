@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.google.services) // Este es el que activa Firebase
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -46,8 +46,6 @@ extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
         compose = true
     }
 
-    // composeOptions is no longer needed with the Kotlin Compose plugin
-
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -71,6 +69,7 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.navigation.compose)
 
+
     // Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
@@ -83,18 +82,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Navigation
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-
-    // ViewModel + LiveData
     implementation(libs.lifecycle.viewmodel)
     implementation(libs.lifecycle.livedata)
-
-    // Coroutines
     implementation(libs.kotlinx.coroutines)
 
-    // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Círculo exterior -->
+    <path
+        android:pathData="M50,40m-38,0a38,38 0,1,1 76,0a38,38 0,1,1 -76,0"
+        android:strokeColor="#924848"
+        android:strokeWidth="2.5" />
+    <!-- Círculo interior -->
+    <path
+        android:pathData="M50,40m-33,0a33,33 0,1,1 66,0a33,33 0,1,1 -66,0"
+        android:strokeColor="#924848"
+        android:strokeWidth="1.5" />
+    <!-- La X redondeada -->
+    <path
+        android:pathData="M36,26L64,54M64,26L36,54"
+        android:strokeColor="#924848"
+        android:strokeLineCap="round"
+        android:strokeWidth="8" />
+    <!-- Botón inferior "Cerrar" -->
+    <path
+        android:fillColor="#924848"
+        android:pathData="M30,75h40c5.5,0 10,4.5 10,10s-4.5,10 -10,10h-40c-5.5,0 -10,-4.5 -10,-10s4.5,-10 10,-10z" />
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M35,82h2v6h-2z M40,84h3v4h-3z M46,84h3v4h-4z M52,84h3v4h-3z M58,84h3v4h-3z M63,84h2v4h-2z" />
+</vector>

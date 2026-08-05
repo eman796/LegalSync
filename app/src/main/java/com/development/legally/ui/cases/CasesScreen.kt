@@ -1,15 +1,19 @@
 package com.development.legally.ui.cases
 
+import android.R.attr.text
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import com.development.legally.ui.ClasesSupremas.*
@@ -25,8 +29,10 @@ fun CasesScreen(
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
-    onNavigateToEditClient: (String) -> Unit = {}
+    onNavigateToEditClient: (String) -> Unit = {},
+    viewModel: CasosViewModel = viewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
     var showNewMenu by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -64,28 +70,54 @@ fun CasesScreen(
                     .padding(horizontal = 17.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
-                MainSearchBar(title = "Buscar expedientes...", onSearch = { })
+                MainSearchBar(
+                    title = "Buscar expedientes...", 
+                    onSearch = { viewModel.updateSearchQuery(it) }
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                FilterSectionRow(title = "Filtrar por:") {
+                    FilterDropdown(
+                        label = "Estado",
+                        options = listOf("Todos", "En proceso", "Pendiente", "Finalizado", "Archivado"),
+                        onOptionSelected = { viewModel.updateStatusFilter(it) }
+                    )
+                    FilterDropdown(
+                        label = "Prioridad",
+                        options = listOf("Todas", "Baja", "Media", "Alta", "Urgente"),
+                        onOptionSelected = { viewModel.updatePriorityFilter(it) }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                val dummyCases = listOf(
-                    "25-000044-033-PE" to "Christian Bullgarelli vs Federico cruz",
-                    "20-000115-1218-PE" to "Procuraduría vs Luis Guillermo Solís Rivera",
-                    "25-002920-0175-PE" to "Rodrigo Arias Sánchez vs STEPHAN"
-                )
-
                 Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(dummyCases) { (id, desc) ->
-                            MasterCaseItem(
-                                caseNumber = id,
-                                description = desc,
-                                status = "ACTIVO",
-                                updateDate = "Ayer",
-                                onClick = { onNavigateToEditCase(id) }
-                            )
+                    if (uiState.loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center),
+                            color = FigmaGold
+                        )
+                    } else if (uiState.error != null) {
+                        Text(
+                            text = uiState.error ?: "Error al cargar expedientes",
+                            color = Color.Red,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            items(uiState.filtered) { case ->
+                                MasterCaseItem(
+                                    caseNumber = case.caseNumber,
+                                    description = case.description,
+                                    status = case.status.uppercase(),
+                                    updateDate = "Actualizado",
+                                    onClick = { onNavigateToEditCase(case.id) }
+                                )
+                            }
                         }
                     }
                 }

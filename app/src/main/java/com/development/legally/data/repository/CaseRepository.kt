@@ -2,22 +2,24 @@ package com.development.legally.data.repository
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.development.legally.data.model.Case
+import com.development.legally.data.model.Client
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 
 class CaseRepository {
 
-    private val firestore = FirebaseFirestore.getInstance()
-    private val casesCollection = firestore.collection("cases")
+    private val firestore = Firebase.firestore
+    private val casesCollection = firestore.collection("Expedientes")
 
     // Obtener todos los expedientes
     suspend fun getCases(): Result<List<Case>> {
         return try {
             val snapshot = casesCollection
-                .orderBy("createdAt")
                 .get()
                 .await()
-            val cases = snapshot.toObjects(Case::class.java)
-            Result.success(cases)
+            val casos = snapshot.toObjects(Case::class.java) // <--- Aquí la llamas 'clients'
+            Result.success(casos)
         } catch (e: Exception) {
             Result.failure(e)
         }

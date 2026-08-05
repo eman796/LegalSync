@@ -14,7 +14,9 @@ data class ClientsUiState(
     val selectedClient: Client? = null,
     val loading: Boolean = false,
     val error: String? = null,
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    val filterPersonType: String = "Todos",
+    val filterStatus: String = "Todos"
 )
 
 class ClientViewModel : ViewModel() {
@@ -34,12 +36,11 @@ class ClientViewModel : ViewModel() {
             val res = repository.getClients()
             if (res.isSuccess) {
                 val list = res.getOrNull() ?: emptyList()
-                _uiState.value = ClientsUiState(
+                _uiState.value = _uiState.value.copy(
                     clients = list,
-                    filtered = list,
-                    loading = false,
-                    searchQuery = _uiState.value.searchQuery
+                    loading = false
                 )
+                applyFilters()
             } else {
                 _uiState.value = _uiState.value.copy(
                     error = res.exceptionOrNull()?.message,
@@ -49,24 +50,48 @@ class ClientViewModel : ViewModel() {
         }
     }
 
-    fun searchClients(query: String) {
+    fun updateSearchQuery(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
-        val filtered = if (query.isBlank()) {
-            _uiState.value.clients
-        } else {
-            _uiState.value.clients.filter { c ->
-                val fullName = (c.name + " " + c.lastName).lowercase()
-                val email = c.email.lowercase()
-                val phone = c.phone.lowercase()
-                val queryLower = query.lowercase()
-                
-                fullName.contains(queryLower) ||
-                email.contains(queryLower) ||
-                phone.contains(queryLower) ||
-                c.address.lowercase().contains(queryLower)
+        applyFilters()
+    }
+
+    fun updatePersonTypeFilter(type: String) {
+        _uiState.value = _uiState.value.copy(filterPersonType = type)
+        applyFilters()
+    }
+
+    fun updateStatusFilter(status: String) {
+        _uiState.value = _uiState.value.copy(filterStatus = status)
+        applyFilters()
+    }
+
+    private fun applyFilters() {
+        val currentState = _uiState.value
+        val query = currentState.searchQuery.lowercase()
+        val personType = currentState.filterPersonType
+        val status = currentState.filterStatus
+
+        val filteredList = currentState.clients.filter { c ->
+            val matchesQuery = if (query.isBlank()) true else {
+                val fullName = "${c.name} ${c.lastName}".lowercase()
+                fullName.contains(query) ||
+                        c.email.lowercase().contains(query) ||
+                        c.phone.lowercase().contains(query) ||
+                        c.address.lowercase().contains(query)
             }
+
+            val matchesType = if (personType == "Todos") true else c.personType == personType
+            // Assuming "Activo" for now as Client model doesn't have status yet
+            val matchesStatus = if (status == "Todos") true else status == "Activo" 
+
+            matchesQuery && matchesType && matchesStatus
         }
-        _uiState.value = _uiState.value.copy(filtered = filtered)
+
+        _uiState.value = _uiState.value.copy(filtered = filteredList)
+    }
+
+    fun searchClients(query: String) {
+        updateSearchQuery(query)
     }
 
     fun loadClientById(clientId: String, onResult: (Client?) -> Unit) {

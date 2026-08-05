@@ -8,9 +8,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,7 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import com.development.legally.R
-//Esta clase es la barra inferior, que contiene los 5 botones principales
+
 @Composable
 fun UserAction(
     onLogoutConfirm: () -> Unit,
@@ -136,15 +133,11 @@ fun MainSearchBar(
 ) {
     var query by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    
-    // Detectar visibilidad del teclado
     val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
 
-    // Si el teclado se cierra manualmente, cancelamos la búsqueda
     LaunchedEffect(isKeyboardVisible) {
         if (!isKeyboardVisible && query.isNotEmpty()) {
-            query = ""
-            onSearch("")
+            // query = ""
         }
     }
 
@@ -158,14 +151,13 @@ fun MainSearchBar(
         contentAlignment = Alignment.CenterStart
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // "X" a la izquierda: limpia y oculta teclado
             Icon(
-                imageVector = Icons.Default.Close,
+                painter = painterResource(id = R.drawable.ic_close_figma),
                 contentDescription = "Cerrar",
                 tint = Color.White,
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable { 
+                    .clickable {
                         query = ""
                         onSearch("")
                         keyboardController?.hide()
@@ -196,12 +188,12 @@ fun MainSearchBar(
             }
 
             Icon(
-                imageVector = Icons.Default.Search,
+                painter = painterResource(id = R.drawable.group_5),
                 contentDescription = "Buscar",
                 tint = goldColor,
                 modifier = Modifier
                     .size(20.dp)
-                    .clickable { 
+                    .clickable {
                         onSearch(query)
                         keyboardController?.hide()
                     }
