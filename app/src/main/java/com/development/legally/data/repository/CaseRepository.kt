@@ -9,23 +9,22 @@ import kotlinx.coroutines.tasks.await
 
 class CaseRepository {
 
-    private val firestore = Firebase.firestore
-    private val casesCollection = firestore.collection("Expedientes")
+    // Usamos lazy para evitar que se acceda a Firebase durante el renderizado del Preview
+    private val firestore by lazy { Firebase.firestore }
+    private val casesCollection by lazy { firestore.collection("Expedientes") }
 
-    // Obtener todos los expedientes
     suspend fun getCases(): Result<List<Case>> {
         return try {
             val snapshot = casesCollection
                 .get()
                 .await()
-            val casos = snapshot.toObjects(Case::class.java) // <--- Aquí la llamas 'clients'
+            val casos = snapshot.toObjects(Case::class.java)
             Result.success(casos)
         } catch (e: Exception) {
             Result.failure(e)
         }
     }
 
-    // Obtener expedientes por cliente
     suspend fun getCasesByClient(clientId: String): Result<List<Case>> {
         return try {
             val snapshot = casesCollection
@@ -39,7 +38,6 @@ class CaseRepository {
         }
     }
 
-    // Obtener un expediente por ID
     suspend fun getCaseById(caseId: String): Result<Case> {
         return try {
             val document = casesCollection.document(caseId).get().await()
@@ -51,7 +49,6 @@ class CaseRepository {
         }
     }
 
-    // Crear expediente
     suspend fun createCase(case: Case): Result<Unit> {
         return try {
             val docRef = casesCollection.document()
@@ -63,7 +60,6 @@ class CaseRepository {
         }
     }
 
-    // Editar expediente
     suspend fun updateCase(case: Case): Result<Unit> {
         return try {
             casesCollection.document(case.id).set(case).await()
@@ -73,7 +69,6 @@ class CaseRepository {
         }
     }
 
-    // Cambiar estado del expediente
     suspend fun updateCaseStatus(caseId: String, status: String): Result<Unit> {
         return try {
             casesCollection.document(caseId)
@@ -85,7 +80,6 @@ class CaseRepository {
         }
     }
 
-    // Eliminar expediente
     suspend fun deleteCase(caseId: String): Result<Unit> {
         return try {
             casesCollection.document(caseId).delete().await()

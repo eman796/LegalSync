@@ -1,12 +1,19 @@
 package com.development.legally.ui.cases
 
-import android.R.attr.text
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,10 +36,43 @@ fun CasesScreen(
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
-    onNavigateToEditClient: (String) -> Unit = {},
-    viewModel: CasosViewModel = viewModel()
+    viewModel: CasosViewModel = viewModel() // Instanciación del ViewModel según las instrucciones
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    // Cargamos los datos solo al iniciar la pantalla real
+    LaunchedEffect(Unit) {
+        viewModel.loadCasos()
+    }
+
+    // Pasamos el ViewModel directamente a la interfaz de contenido
+    CasesContent(
+        uiState = uiState,
+        viewModel = viewModel,
+        onLogout = onLogout,
+        onNavigateToHome = onNavigateToHome,
+        onNavigateToNewCase = onNavigateToNewCase,
+        onNavigateToNewClient = onNavigateToNewClient,
+        onNavigateToNewEvent = onNavigateToNewEvent,
+        onNavigateToAgenda = onNavigateToAgenda,
+        onNavigateToClients = onNavigateToClients,
+        onNavigateToEditCase = onNavigateToEditCase
+    )
+}
+
+@Composable
+fun CasesContent(
+    uiState: CasosUiState,
+    viewModel: CasosViewModel?, // Nullable para soportar Preview
+    onLogout: () -> Unit = {},
+    onNavigateToHome: () -> Unit = {},
+    onNavigateToNewCase: () -> Unit = {},
+    onNavigateToNewClient: () -> Unit = {},
+    onNavigateToNewEvent: () -> Unit = {},
+    onNavigateToAgenda: () -> Unit = {},
+    onNavigateToClients: () -> Unit = {},
+    onNavigateToEditCase: (String) -> Unit = {}
+) {
     var showNewMenu by remember { mutableStateOf(false) }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -51,7 +91,7 @@ fun CasesScreen(
                     NotificationAction()
                 }
             },
-            bottomBar = { 
+            bottomBar = {
                 LegallyBottomNavigationBar(
                     currentRoute = "cases",
                     onInicioClick = onNavigateToHome,
@@ -70,29 +110,34 @@ fun CasesScreen(
                     .padding(horizontal = 17.dp)
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
+
+                // Uso directo del ViewModel para acciones
                 MainSearchBar(
-                    title = "Buscar expedientes...", 
-                    onSearch = { viewModel.updateSearchQuery(it) }
+                    title = "Buscar expedientes...",
+                    onSearch = { viewModel?.updateSearchQuery(it) }
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 FilterSectionRow(title = "Filtrar por:") {
                     FilterDropdown(
                         label = "Estado",
                         options = listOf("Todos", "En proceso", "Pendiente", "Finalizado", "Archivado"),
-                        onOptionSelected = { viewModel.updateStatusFilter(it) }
+                        onOptionSelected = { viewModel?.updateStatusFilter(it) }
                     )
                     FilterDropdown(
                         label = "Prioridad",
                         options = listOf("Todas", "Baja", "Media", "Alta", "Urgente"),
-                        onOptionSelected = { viewModel.updatePriorityFilter(it) }
+                        onOptionSelected = { viewModel?.updatePriorityFilter(it) }
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Box(modifier = Modifier.fillMaxWidth().weight(1f).background(FigmaBackground)) {
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(FigmaBackground)) {
                     if (uiState.loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
@@ -141,5 +186,20 @@ fun CasesScreen(
                 }
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CasesPreview() {
+    LegallyTheme {
+        // En el Preview pasamos null al ViewModel para que no intente usar Firebase
+        CasesContent(
+            uiState = CasosUiState(
+                loading = false,
+                filtered = emptyList()
+            ),
+            viewModel = null
+        )
     }
 }

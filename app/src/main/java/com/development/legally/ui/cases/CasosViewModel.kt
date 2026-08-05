@@ -6,6 +6,7 @@ import com.development.legally.data.model.Case
 import com.development.legally.data.repository.CaseRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 data class CasosUiState(
@@ -21,13 +22,11 @@ data class CasosUiState(
 class CasosViewModel : ViewModel() {
     private val repository = CaseRepository()
     private val _uiState = MutableStateFlow(CasosUiState())
-    val uiState: StateFlow<CasosUiState> = _uiState
+    val uiState: StateFlow<CasosUiState> = _uiState.asStateFlow()
 
-    init {
-        loadCasos()
-    }
-
+    // No llamamos a loadCasos en el init para evitar errores en el Preview de Compose
     fun loadCasos() {
+        if (_uiState.value.loading) return
         _uiState.value = _uiState.value.copy(loading = true, error = null)
         viewModelScope.launch {
             val res = repository.getCases()

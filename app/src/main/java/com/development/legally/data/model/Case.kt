@@ -5,6 +5,7 @@ import com.google.firebase.Timestamp
 data class Case(
     val id: String = "",
     val caseNumber: String = "",
+    val CaseTittle: String = "", // Campo agregado para coincidir con la UI
     val clientId: String = "",
     val clientName: String = "",
     val processType: String = "",
