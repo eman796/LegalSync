@@ -17,32 +17,45 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
 import com.development.legally.ui.ClasesSupremas.EdicionSuprema
+import com.development.legally.ui.cases.CasosViewModel
 import com.development.legally.ui.theme.LegallyTheme
 
 @Composable
 fun EditarCasoScreen(
+    caseId: String?,
     onBack: () -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
-    onDuplicate: () -> Unit
+    onDuplicate: () -> Unit,
+    viewModel: CasosViewModel = viewModel()
 ) {
-    var numeroExpediente by remember { mutableStateOf("25-00000-033-PE") }
-    var tituloCaso by remember { mutableStateOf("25-00000-033-PE") }
-    var tipoProceso by remember { mutableStateOf("Penal") }
-    var estadoCaso by remember { mutableStateOf("Activo") }
-    var descripcion by remember { mutableStateOf("05/06/2025") }
+    val uiState by viewModel.uiState.collectAsState()
+
+    // Cargar los datos del caso real al iniciar
+    LaunchedEffect(caseId) {
+        viewModel.setCaseForEditing(caseId)
+    }
+
+    // Navegar atrás cuando se guarde con éxito
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            onSave()
+            viewModel.resetSaveState()
+        }
+    }
 
     EdicionSuprema.PantallaBase(
         titulo = "Editar Caso",
-        textoBotonGuardar = "Guardar caso",
+        textoBotonGuardar = if (uiState.isSaving) "Guardando..." else "Guardar caso",
         textoBotonEliminar = "Eliminar caso",
         onAtras = onBack,
         onCancelar = onBack,
-        onGuardar = onSave,
+        onGuardar = { viewModel.guardarCaso() },
         onDuplicar = onDuplicate,
-        onEliminar = onDelete
+        onEliminar = { viewModel.eliminarCaso() }
     ) {
         EdicionSuprema.TituloSeccion(
             titulo = "Información General",
@@ -53,16 +66,16 @@ fun EditarCasoScreen(
             EdicionSuprema.ElementoEdicion(
                 titulo = "Número de expediente",
                 placeholder = "Ingrese...",
-                valor = numeroExpediente,
-                onValorChange = { numeroExpediente = it },
+                valor = uiState.numeroExpediente,
+                onValorChange = { viewModel.onNumeroExpedienteChange(it) },
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(16.dp))
             EdicionSuprema.ElementoEdicion(
                 titulo = "Título del caso",
                 placeholder = "Ingrese...",
-                valor = tituloCaso,
-                onValorChange = { tituloCaso = it },
+                valor = uiState.tituloCaso,
+                onValorChange = { viewModel.onTituloCasoChange(it) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -74,8 +87,8 @@ fun EditarCasoScreen(
                 titulo = "Tipo de proceso",
                 placeholder = "Seleccione...",
                 tipo = EdicionSuprema.TipoDato.LISTA,
-                valor = tipoProceso,
-                onValorChange = { tipoProceso = it },
+                valor = uiState.tipoProceso,
+                onValorChange = { viewModel.onTipoProcesoChange(it) },
                 modifier = Modifier.weight(1f)
             )
             Spacer(modifier = Modifier.width(16.dp))
@@ -83,8 +96,8 @@ fun EditarCasoScreen(
                 titulo = "Estado del caso",
                 placeholder = "Seleccione...",
                 tipo = EdicionSuprema.TipoDato.LISTA,
-                valor = estadoCaso,
-                onValorChange = { estadoCaso = it },
+                valor = uiState.estadoCaso,
+                onValorChange = { viewModel.onEstadoCasoChange(it) },
                 modifier = Modifier.weight(1f)
             )
         }
@@ -94,8 +107,8 @@ fun EditarCasoScreen(
         EdicionSuprema.ElementoEdicion(
             titulo = "Descripción del caso",
             placeholder = "Ingrese descripción...",
-            valor = descripcion,
-            onValorChange = { descripcion = it },
+            valor = uiState.descripcion,
+            onValorChange = { viewModel.onDescripcionChange(it) },
             height = 150.dp,
             maxChars = 1000
         )
@@ -104,7 +117,7 @@ fun EditarCasoScreen(
 
         EdicionSuprema.TituloSeccion(
             titulo = "Cliente",
-            logo = R.drawable.ic_nav_clientes_off // Usando el de clientes off como en el mockup
+            logo = R.drawable.ic_nav_clientes_off
         )
 
         // Tarjeta de cliente
@@ -115,7 +128,6 @@ fun EditarCasoScreen(
                 .padding(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar simple
                 Box(
                     modifier = Modifier
                         .size(48.dp)
@@ -138,7 +150,7 @@ fun EditarCasoScreen(
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Cédula: 5-0456-0691",
+                        text = "Cliente vinculado",
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
@@ -165,6 +177,6 @@ fun EditarCasoScreen(
 @Composable
 fun EditarCasoPreview() {
     LegallyTheme {
-        EditarCasoScreen(onBack = {}, onSave = {}, onDelete = {}, onDuplicate = {})
+        EditarCasoScreen(caseId = "123", onBack = {}, onSave = {}, onDelete = {}, onDuplicate = {})
     }
 }

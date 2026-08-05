@@ -67,9 +67,36 @@ fun LegallyApp() {
         startDestination = startDestination
     ) {
         // --- RUTAS DE EDICIÓN ---
-        composable("edit_case/{caseId}") { EditarCasoScreen({navController.popBackStack()},{navController.popBackStack()},{navController.popBackStack()},{ }) }
-        composable("edit_event/{eventId}") { EditarEventoScreen({navController.popBackStack()},{navController.popBackStack()},{navController.popBackStack()},{ }) }
-        composable("edit_client/{clientId}") { EditarClienteScreen({navController.popBackStack()},{navController.popBackStack()},{navController.popBackStack()},{ }) }
+        composable("edit_case/{caseId}") { it ->
+            val caseId = it.arguments?.getString("caseId")
+            EditarCasoScreen(
+                caseId = caseId,
+                onBack = { navController.popBackStack() },
+                onSave = { navController.popBackStack() },
+                onDelete = { navController.popBackStack() },
+                onDuplicate = { }
+            )
+        }
+
+        composable("edit_event/{eventId}") { it ->
+            val eventId = it.arguments?.getString("eventId")
+            EditarEventoScreen(
+                eventId = eventId,
+                onBack = { navController.popBackStack() },
+                onSave = { navController.popBackStack() }
+            )
+        }
+
+        composable("edit_client/{clientId}") { it ->
+            val clientId = it.arguments?.getString("clientId")
+            EditarClienteScreen(
+                clientId = clientId,
+                onBack = { navController.popBackStack() },
+                onSave = { navController.popBackStack() },
+                onDelete = { navController.popBackStack() },
+                onDuplicate = { }
+            )
+        }
 
         // --- RUTAS DE NUEVO ---
         composable(Screen.NewCase.route) { NuevoCasoScreen({navController.popBackStack()},{navController.popBackStack()}) }

@@ -8,30 +8,115 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
+import com.development.legally.data.model.Client
+import com.development.legally.data.repository.ClientRepository
 import com.development.legally.ui.ClasesSupremas.EdicionSuprema
 import com.development.legally.ui.theme.LegallyTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+data class EditarClienteUiState(
+    val nombre: String = "",
+    val tipoPersona: String = "Física",
+    val identidad: String = "Cédula",
+    val fechaNacimiento: String = "",
+    val nacionalidad: String = "",
+    val correo: String = "",
+    val telefono: String = "",
+    val numeroDocumento: String = "",
+    val descripcion: String = "",
+    val isLoading: Boolean = false,
+    val isSaved: Boolean = false
+)
+
+class EditarClienteViewModel(private val repository: ClientRepository = ClientRepository()) : ViewModel() {
+    private val _uiState = MutableStateFlow(EditarClienteUiState())
+    val uiState: StateFlow<EditarClienteUiState> = _uiState
+
+    fun loadClient(clientId: String?) {
+        if (clientId == null) return
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            repository.getClientById(clientId).onSuccess { client ->
+                _uiState.update { it.copy(
+                    nombre = client.name,
+                    tipoPersona = client.personType,
+                    correo = client.email,
+                    telefono = client.phone,
+                    numeroDocumento = client.id,
+                    descripcion = client.description,
+                    isLoading = false
+                ) }
+            }
+        }
+    }
+
+    fun onNombreChange(v: String) = _uiState.update { it.copy(nombre = v) }
+    fun onCorreoChange(v: String) = _uiState.update { it.copy(correo = v) }
+    fun onTelefonoChange(v: String) = _uiState.update { it.copy(telefono = v) }
+    fun onDocChange(v: String) = _uiState.update { it.copy(numeroDocumento = v) }
+    fun onDescChange(v: String) = _uiState.update { it.copy(descripcion = v) }
+
+    fun guardar() {
+        // Lógica de guardado...
+        _uiState.update { it.copy(isSaved = true) }
+    }
+}
 
 @Composable
 fun EditarClienteScreen(
+    clientId: String?,
     onBack: () -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
-    onDuplicate: () -> Unit
+    onDuplicate: () -> Unit,
+    viewModel: EditarClienteViewModel = viewModel()
 ) {
-    var nombre by remember { mutableStateOf("Progra V grupo 3") }
-    var tipoPersona by remember { mutableStateOf("Física") }
-    var identidad by remember { mutableStateOf("Cédula") }
-    var fechaNacimiento by remember { mutableStateOf("05/06/2025 XX:XX") }
-    var nacionalidad by remember { mutableStateOf("Costarricense") }
-    var correo by remember { mutableStateOf("example@gmail.com") }
-    var telefono by remember { mutableStateOf("+506 6282 1116") }
-    var numeroDocumento by remember { mutableStateOf("5-0456-0691") }
-    var descripcion by remember { mutableStateOf("05/06/2025") }
+    val uiState by viewModel.uiState.collectAsState()
 
+    LaunchedEffect(clientId) {
+        viewModel.loadClient(clientId)
+    }
+
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) onSave()
+    }
+
+    EditarClienteContent(
+        uiState = uiState,
+        onBack = onBack,
+        onSave = { viewModel.guardar() },
+        onDelete = onDelete,
+        onDuplicate = onDuplicate,
+        onNombreChange = { viewModel.onNombreChange(it) },
+        onCorreoChange = { viewModel.onCorreoChange(it) },
+        onTelefonoChange = { viewModel.onTelefonoChange(it) },
+        onDocChange = { viewModel.onDocChange(it) },
+        onDescChange = { viewModel.onDescChange(it) }
+    )
+}
+
+@Composable
+fun EditarClienteContent(
+    uiState: EditarClienteUiState,
+    onBack: () -> Unit,
+    onSave: () -> Unit,
+    onDelete: () -> Unit,
+    onDuplicate: () -> Unit,
+    onNombreChange: (String) -> Unit,
+    onCorreoChange: (String) -> Unit,
+    onTelefonoChange: (String) -> Unit,
+    onDocChange: (String) -> Unit,
+    onDescChange: (String) -> Unit
+) {
     EdicionSuprema.PantallaBase(
         titulo = "Editar Cliente",
         textoBotonGuardar = "Guardar Cliente",
@@ -42,16 +127,13 @@ fun EditarClienteScreen(
         onDuplicar = onDuplicate,
         onEliminar = onDelete
     ) {
-        EdicionSuprema.TituloSeccion(
-            titulo = "Información General",
-            logo = R.drawable.ic_stat_folder
-        )
+        EdicionSuprema.TituloSeccion(titulo = "Información General", logo = R.drawable.ic_stat_folder)
 
         EdicionSuprema.ElementoEdicion(
             titulo = "Nombre del cliente",
-            placeholder = "Ingrese nombre...",
-            valor = nombre,
-            onValorChange = { nombre = it }
+            valor = uiState.nombre,
+            onValorChange = onNombreChange,
+            placeholder = ""
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -59,42 +141,20 @@ fun EditarClienteScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             EdicionSuprema.ElementoEdicion(
                 titulo = "Tipo de persona",
-                placeholder = "Física",
                 tipo = EdicionSuprema.TipoDato.LISTA,
-                valor = tipoPersona,
-                onValorChange = { tipoPersona = it },
-                modifier = Modifier.weight(1f)
+                valor = uiState.tipoPersona,
+                onValorChange = { },
+                modifier = Modifier.weight(1f),
+                placeholder =""
             )
             Spacer(modifier = Modifier.width(16.dp))
             EdicionSuprema.ElementoEdicion(
                 titulo = "Identidad",
-                placeholder = "Cédula",
                 tipo = EdicionSuprema.TipoDato.LISTA,
-                valor = identidad,
-                onValorChange = { identidad = it },
-                modifier = Modifier.weight(1f)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            EdicionSuprema.ElementoEdicion(
-                titulo = "Fecha de nacimiento",
-                placeholder = "05/06/2025 XX:XX",
-                tipo = EdicionSuprema.TipoDato.LISTA,
-                valor = fechaNacimiento,
-                onValorChange = { fechaNacimiento = it },
-                modifier = Modifier.weight(1f)
-            )
-            Spacer(modifier = Modifier.width(16.dp))
-            EdicionSuprema.ElementoEdicion(
-                titulo = "Nacionalidad",
-                placeholder = "Costarricense",
-                tipo = EdicionSuprema.TipoDato.LISTA,
-                valor = nacionalidad,
-                onValorChange = { nacionalidad = it },
-                modifier = Modifier.weight(1f)
+                valor = uiState.identidad,
+                onValorChange = { },
+                modifier = Modifier.weight(1f),
+                placeholder = ""
             )
         }
 
@@ -102,10 +162,10 @@ fun EditarClienteScreen(
 
         EdicionSuprema.ElementoEdicion(
             titulo = "Correo",
-            placeholder = "example@gmail.com",
-            valor = correo,
-            onValorChange = { correo = it },
-            leadingIcon = { Icon(Icons.Default.Email, null, tint = Color.Gray, modifier = Modifier.size(20.dp)) }
+            valor = uiState.correo,
+            onValorChange = onCorreoChange,
+            placeholder = "",
+            leadingIcon = { Icon(Icons.Default.Email, null, tint = Color.Gray)}
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -113,19 +173,19 @@ fun EditarClienteScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             EdicionSuprema.ElementoEdicion(
                 titulo = "Teléfono",
-                placeholder = "+506 6282 1116",
-                valor = telefono,
-                onValorChange = { telefono = it },
+                valor = uiState.telefono,
+                onValorChange = onTelefonoChange,
                 modifier = Modifier.weight(1.2f),
-                leadingIcon = { Icon(Icons.Default.Phone, null, tint = Color.Gray, modifier = Modifier.size(20.dp)) }
+                placeholder = "Teléfono",
+                leadingIcon = { Icon(Icons.Default.Phone, null, tint = Color.Gray) }
             )
             Spacer(modifier = Modifier.width(16.dp))
             EdicionSuprema.ElementoEdicion(
                 titulo = "Numero de documento",
-                placeholder = "5-0456-0691",
-                valor = numeroDocumento,
-                onValorChange = { numeroDocumento = it },
-                modifier = Modifier.weight(1f)
+                valor = uiState.numeroDocumento,
+                onValorChange = onDocChange,
+                modifier = Modifier.weight(1f),
+                placeholder = "Número de documento",
             )
         }
 
@@ -133,19 +193,11 @@ fun EditarClienteScreen(
 
         EdicionSuprema.ElementoEdicion(
             titulo = "",
-            placeholder = "05/06/2025",
-            valor = descripcion,
-            onValorChange = { descripcion = it },
+            valor = uiState.descripcion,
+            onValorChange = onDescChange,
             height = 150.dp,
-            maxChars = 1000
+            maxChars = 1000,
+            placeholder = "Descripcion"
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EditarClientePreview() {
-    LegallyTheme {
-        EditarClienteScreen(onBack = {}, onSave = {}, onDelete = {}, onDuplicate = {})
     }
 }

@@ -126,7 +126,7 @@ class AgendaViewModel(private val repository: EventRepository = EventRepository(
     }
 
     fun updateSearchQuery(query: String) {
-        _uiState.update { state -> 
+        _uiState.update { state ->
             state.copy(
                 searchQuery = query,
                 filteredEvents = applyFilterLogic(state.events, query, state.filterType)
@@ -146,15 +146,15 @@ class AgendaViewModel(private val repository: EventRepository = EventRepository(
     private fun applyFilterLogic(events: List<Event>, query: String, type: String): List<Event> {
         val q = query.lowercase()
         return events.filter { event ->
-            val matchesQuery = event.titulo.lowercase().contains(q) || 
+            val matchesQuery = event.titulo.lowercase().contains(q) ||
                              event.descripcion.lowercase().contains(q) ||
                              event.casoRelacionado.lowercase().contains(q)
-            
+
             val matchesType = if (type == "Todos") true else event.tipo == type
             matchesQuery && matchesType
         }
     }
-    
+
     fun onTituloChange(v: String) { _uiState.update { it.copy(titulo = v) } }
     fun onTipoChange(v: String) { _uiState.update { it.copy(tipo = v) } }
     fun onEstadoChange(v: String) { _uiState.update { it.copy(estado = v) } }
