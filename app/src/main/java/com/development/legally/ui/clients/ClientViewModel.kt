@@ -150,4 +150,44 @@ class ClientViewModel : ViewModel() {
     fun clearSelectedClient() {
         _uiState.value = _uiState.value.copy(selectedClient = null)
     }
+
+    // Ordenar y filtrar usando consultas estructuradas al repositorio (Firestore)
+    fun loadClientsOrderedBy(field: String) {
+        _uiState.value = _uiState.value.copy(loading = true, error = null)
+        viewModelScope.launch {
+            val res = repository.getClientsOrderedBy(field)
+            if (res.isSuccess) {
+                val list = res.getOrNull() ?: emptyList()
+                _uiState.value = _uiState.value.copy(clients = list, filtered = list, loading = false)
+            } else {
+                _uiState.value = _uiState.value.copy(error = res.exceptionOrNull()?.message, loading = false)
+            }
+        }
+    }
+
+    fun loadClientsFilteredBy(field: String, value: String) {
+        _uiState.value = _uiState.value.copy(loading = true, error = null)
+        viewModelScope.launch {
+            val res = repository.getClientsFilteredBy(field, value)
+            if (res.isSuccess) {
+                val list = res.getOrNull() ?: emptyList()
+                _uiState.value = _uiState.value.copy(filtered = list, loading = false)
+            } else {
+                _uiState.value = _uiState.value.copy(error = res.exceptionOrNull()?.message, loading = false)
+            }
+        }
+    }
+
+    fun loadClientsFilteredAndOrdered(filterField: String?, filterValue: String?, orderField: String?) {
+        _uiState.value = _uiState.value.copy(loading = true, error = null)
+        viewModelScope.launch {
+            val res = repository.getClientsFilteredAndOrdered(filterField, filterValue, orderField)
+            if (res.isSuccess) {
+                val list = res.getOrNull() ?: emptyList()
+                _uiState.value = _uiState.value.copy(clients = list, filtered = list, loading = false)
+            } else {
+                _uiState.value = _uiState.value.copy(error = res.exceptionOrNull()?.message, loading = false)
+            }
+        }
+    }
 }
