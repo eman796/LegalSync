@@ -39,13 +39,9 @@ fun CasesScreen(
     viewModel: CasosViewModel = viewModel() // Instanciación del ViewModel según las instrucciones
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    // Cargamos los datos solo al iniciar la pantalla real
     LaunchedEffect(Unit) {
         viewModel.loadCasos()
     }
-
-    // Pasamos el ViewModel directamente a la interfaz de contenido
     CasesContent(
         uiState = uiState,
         viewModel = viewModel,
@@ -63,7 +59,7 @@ fun CasesScreen(
 @Composable
 fun CasesContent(
     uiState: CasosUiState,
-    viewModel: CasosViewModel?, // Nullable para soportar Preview
+    viewModel: CasosViewModel?,
     onLogout: () -> Unit = {},
     onNavigateToHome: () -> Unit = {},
     onNavigateToNewCase: () -> Unit = {},
@@ -75,7 +71,7 @@ fun CasesContent(
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {//Titulo, parte de arrriba
         Scaffold(
             topBar = {
                 Row(
@@ -91,7 +87,7 @@ fun CasesContent(
                     NotificationAction()
                 }
             },
-            bottomBar = {
+            bottomBar = {//Barra inferior, navega a otros menus
                 LegallyBottomNavigationBar(
                     currentRoute = "cases",
                     onInicioClick = onNavigateToHome,
@@ -111,14 +107,13 @@ fun CasesContent(
             ) {
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Uso directo del ViewModel para acciones
                 MainSearchBar(
                     title = "Buscar expedientes...",
                     onSearch = { viewModel?.updateSearchQuery(it) }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-
+//Seccion de filtros
                 FilterSectionRow(title = "Filtrar por:") {
                     FilterDropdown(
                         label = "Estado",
@@ -133,17 +128,17 @@ fun CasesContent(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-
+//Ya expedientes como tal
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
                     .background(FigmaBackground)) {
-                    if (uiState.loading) {
+                    if (uiState.loading) {//Bola de Cargando
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
                             color = FigmaGold
                         )
-                    } else if (uiState.error != null) {
+                    } else if (uiState.error != null) {//Si hay error
                         Text(
                             text = uiState.error ?: "Error al cargar expedientes",
                             color = Color.Red,
@@ -156,10 +151,10 @@ fun CasesContent(
                         ) {
                             items(uiState.filtered) { case ->
                                 MasterCaseItem(
-                                    caseNumber = case.caseNumber,
+                                    caseTitle = case.caseNumber,
                                     description = case.description,
                                     status = case.status.uppercase(),
-                                    updateDate = "Actualizado",
+                                    updateDate = "${case.updatedAt?.toDate()}",
                                     onClick = { onNavigateToEditCase(case.id) }
                                 )
                             }
@@ -193,7 +188,6 @@ fun CasesContent(
 @Composable
 fun CasesPreview() {
     LegallyTheme {
-        // En el Preview pasamos null al ViewModel para que no intente usar Firebase
         CasesContent(
             uiState = CasosUiState(
                 loading = false,

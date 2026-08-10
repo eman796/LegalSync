@@ -1,5 +1,6 @@
 package com.development.legally.ui.ClasesSupremas
 
+import android.icu.text.CaseMap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -24,8 +25,7 @@ import com.development.legally.R
 //Esta clase lo que hace es que se pongan en una sola clase, cada item de las pantallas de Agenda, Expediente y cliente
 
 @Composable
-//Clase maestra de item de cliente.
-fun MasterClientItem(
+fun MasterClientItem(//Item Maestro de cliente
     name: String,
     activeCount: String,
     summary: String,
@@ -81,8 +81,7 @@ fun MasterClientItem(
                 }
                 
                 Spacer(modifier = Modifier.height(8.dp))
-                
-                // Resumen (Descripción del cliente/casos)
+
                 Text(
                     text = summary,
                     color = Color.White,
@@ -92,8 +91,6 @@ fun MasterClientItem(
                 )
                 
                 Spacer(modifier = Modifier.height(12.dp))
-                
-                // Cantidad de expedientes activos abajo a la derecha
                 Text(
                     text = activeCount,
                     color = Color(0xFFBDBDBD),
@@ -107,8 +104,8 @@ fun MasterClientItem(
 }
 
 @Composable
-fun MasterCaseItem(
-    caseNumber: String,
+fun MasterCaseItem(//Clase maestra de Caso/Expediente
+    caseTitle: String,
     description: String,
     status: String,
     updateDate: String,
@@ -143,14 +140,14 @@ fun MasterCaseItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = caseNumber,
+                        text = caseTitle,
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = status.uppercase(),
-                        color = goldColor,
+                        color = Color.White,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.End

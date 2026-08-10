@@ -50,6 +50,27 @@ class ClientViewModel : ViewModel() {
         }
     }
 
+    // Nuevo método para manejar filtros y ordenamiento combinados desde Firestore
+    fun loadClientsFilteredAndOrdered(filterField: String?, filterValue: String?, orderField: String?) {
+        _uiState.value = _uiState.value.copy(loading = true, error = null)
+        viewModelScope.launch {
+            val res = repository.getClientsFilteredAndOrdered(filterField, filterValue, orderField)
+            if (res.isSuccess) {
+                val list = res.getOrNull() ?: emptyList()
+                _uiState.value = _uiState.value.copy(
+                    clients = list,
+                    filtered = list,
+                    loading = false
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    error = res.exceptionOrNull()?.message,
+                    loading = false
+                )
+            }
+        }
+    }
+
     fun updateSearchQuery(query: String) {
         _uiState.value = _uiState.value.copy(searchQuery = query)
         applyFilters()
@@ -81,17 +102,12 @@ class ClientViewModel : ViewModel() {
             }
 
             val matchesType = if (personType == "Todos") true else c.personType == personType
-            // Assuming "Activo" for now as Client model doesn't have status yet
-            val matchesStatus = if (status == "Todos") true else status == "Activo" 
+            val matchesStatus = if (status == "Todos") true else status == "Activo"
 
             matchesQuery && matchesType && matchesStatus
         }
 
         _uiState.value = _uiState.value.copy(filtered = filteredList)
-    }
-
-    fun searchClients(query: String) {
-        updateSearchQuery(query)
     }
 
     fun loadClientById(clientId: String, onResult: (Client?) -> Unit) {
@@ -111,8 +127,8 @@ class ClientViewModel : ViewModel() {
         viewModelScope.launch {
             val res = repository.createClient(client)
             if (res.isSuccess) {
-                loadClients()
                 onDone(true, null)
+                loadClients()
             } else {
                 onDone(false, res.exceptionOrNull()?.message)
             }
@@ -123,8 +139,8 @@ class ClientViewModel : ViewModel() {
         viewModelScope.launch {
             val res = repository.updateClient(client)
             if (res.isSuccess) {
-                loadClients()
                 onDone(true, null)
+                loadClients()
             } else {
                 onDone(false, res.exceptionOrNull()?.message)
             }
@@ -135,8 +151,8 @@ class ClientViewModel : ViewModel() {
         viewModelScope.launch {
             val res = repository.deleteClient(clientId)
             if (res.isSuccess) {
-                loadClients()
                 onDone(true, null)
+                loadClients()
             } else {
                 onDone(false, res.exceptionOrNull()?.message)
             }
@@ -145,49 +161,5 @@ class ClientViewModel : ViewModel() {
 
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
-    }
-
-    fun clearSelectedClient() {
-        _uiState.value = _uiState.value.copy(selectedClient = null)
-    }
-
-    // Ordenar y filtrar usando consultas estructuradas al repositorio (Firestore)
-    fun loadClientsOrderedBy(field: String) {
-        _uiState.value = _uiState.value.copy(loading = true, error = null)
-        viewModelScope.launch {
-            val res = repository.getClientsOrderedBy(field)
-            if (res.isSuccess) {
-                val list = res.getOrNull() ?: emptyList()
-                _uiState.value = _uiState.value.copy(clients = list, filtered = list, loading = false)
-            } else {
-                _uiState.value = _uiState.value.copy(error = res.exceptionOrNull()?.message, loading = false)
-            }
-        }
-    }
-
-    fun loadClientsFilteredBy(field: String, value: String) {
-        _uiState.value = _uiState.value.copy(loading = true, error = null)
-        viewModelScope.launch {
-            val res = repository.getClientsFilteredBy(field, value)
-            if (res.isSuccess) {
-                val list = res.getOrNull() ?: emptyList()
-                _uiState.value = _uiState.value.copy(filtered = list, loading = false)
-            } else {
-                _uiState.value = _uiState.value.copy(error = res.exceptionOrNull()?.message, loading = false)
-            }
-        }
-    }
-
-    fun loadClientsFilteredAndOrdered(filterField: String?, filterValue: String?, orderField: String?) {
-        _uiState.value = _uiState.value.copy(loading = true, error = null)
-        viewModelScope.launch {
-            val res = repository.getClientsFilteredAndOrdered(filterField, filterValue, orderField)
-            if (res.isSuccess) {
-                val list = res.getOrNull() ?: emptyList()
-                _uiState.value = _uiState.value.copy(clients = list, filtered = list, loading = false)
-            } else {
-                _uiState.value = _uiState.value.copy(error = res.exceptionOrNull()?.message, loading = false)
-            }
-        }
     }
 }

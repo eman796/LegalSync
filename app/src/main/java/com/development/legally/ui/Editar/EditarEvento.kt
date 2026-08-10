@@ -31,14 +31,14 @@ fun EditarEventoScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Cargamos los datos reales del evento cuando el eventId cambia
+    // Cargamos los datos reales de Firebase usando el eventId
     LaunchedEffect(eventId) {
         if (eventId != null) {
             viewModel.setEventForEditing(eventId)
         }
     }
 
-    // Navegar atrás cuando se guarde con éxito
+    // Regresar cuando el guardado sea exitoso
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onSave()
@@ -60,6 +60,8 @@ fun EditarEventoScreen(
             logo = R.drawable.ic_expedientes_edit
         )
 
+
+        // IMPORTANTE: Aquí ya no hay datos dummies, usamos uiState directamente
         EdicionSuprema.ElementoEdicion(
             titulo = "Título del Evento",
             placeholder = "Ingrese título...",
@@ -155,6 +157,7 @@ fun EditarEventoScreen(
                 Box(modifier = Modifier.size(48.dp).background(Color(0xFF0D1117), RoundedCornerShape(24.dp)))
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
+                    // Muestra el participante real de Firebase
                     Text(text = uiState.participante.ifBlank { "Participante" }, color = Color.White, fontWeight = FontWeight.Bold)
                     Text(text = "Persona vinculada", color = Color.Gray, fontSize = 12.sp)
                 }

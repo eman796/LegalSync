@@ -63,7 +63,7 @@ class CasosViewModel : ViewModel() {
             resetForm()
             return
         }
-        val case = _uiState.value.cases.find { it.id == caseId }
+        val case = _uiState.value.cases.find { it.firestoreDocId == caseId }
         if (case != null) {
             populateForm(case)
         } else {
@@ -76,7 +76,7 @@ class CasosViewModel : ViewModel() {
 
     private fun populateForm(case: Case) {
         _uiState.update { it.copy(
-            currentCaseId = case.id,
+            currentCaseId = case.firestoreDocId,
             numeroExpediente = case.caseNumber,
             tituloCaso = case.CaseTittle,
             tipoProceso = case.processType,
@@ -145,7 +145,7 @@ class CasosViewModel : ViewModel() {
         
         _uiState.update { it.copy(isSaving = true) }
         
-        val caseToUpdate = state.cases.find { it.id == caseId }?.copy(
+        val caseToUpdate = state.cases.find { it.firestoreDocId == caseId }?.copy(
             caseNumber = state.numeroExpediente,
             CaseTittle = state.tituloCaso,
             processType = state.tipoProceso,

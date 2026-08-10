@@ -77,10 +77,11 @@ class AgendaViewModel(private val repository: EventRepository = EventRepository(
             return
         }
         
-        val event = _uiState.value.events.find { it.id == eventId }
+        // Usamos eventId (que es el firestore Doc ID) para buscar en la lista
+        val event = _uiState.value.events.find { it.eventId == eventId }
         if (event != null) {
             _uiState.update { it.copy(
-                currentEventId = event.id,
+                currentEventId = event.eventId,
                 titulo = event.titulo,
                 tipo = event.tipo,
                 estado = event.estado,
@@ -99,7 +100,7 @@ class AgendaViewModel(private val repository: EventRepository = EventRepository(
                 val result = repository.getEventById(eventId)
                 result.getOrNull()?.let { remoteEvent ->
                     _uiState.update { it.copy(
-                        currentEventId = remoteEvent.id,
+                        currentEventId = remoteEvent.eventId,
                         titulo = remoteEvent.titulo,
                         tipo = remoteEvent.tipo,
                         estado = remoteEvent.estado,
@@ -181,7 +182,7 @@ class AgendaViewModel(private val repository: EventRepository = EventRepository(
         }
 
         val eventToSave = Event(
-            id = state.currentEventId ?: "",
+            eventId = state.currentEventId ?: "",
             titulo = state.titulo,
             tipo = state.tipo,
             estado = state.estado,

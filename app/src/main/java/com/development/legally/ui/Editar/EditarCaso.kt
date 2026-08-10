@@ -34,12 +34,14 @@ fun EditarCasoScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Cargar los datos del caso real al iniciar
+    // Disparar la carga del caso real desde Firebase al entrar
     LaunchedEffect(caseId) {
-        viewModel.setCaseForEditing(caseId)
+        if (caseId != null) {
+            viewModel.setCaseForEditing(caseId)
+        }
     }
 
-    // Navegar atrás cuando se guarde con éxito
+    // Regresar cuando se confirme el guardado
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onSave()
@@ -65,7 +67,7 @@ fun EditarCasoScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             EdicionSuprema.ElementoEdicion(
                 titulo = "Número de expediente",
-                placeholder = "Ingrese...",
+                placeholder = "Ingrese número...",
                 valor = uiState.numeroExpediente,
                 onValorChange = { viewModel.onNumeroExpedienteChange(it) },
                 modifier = Modifier.weight(1f)
@@ -73,7 +75,7 @@ fun EditarCasoScreen(
             Spacer(modifier = Modifier.width(16.dp))
             EdicionSuprema.ElementoEdicion(
                 titulo = "Título del caso",
-                placeholder = "Ingrese...",
+                placeholder = "Ingrese título...",
                 valor = uiState.tituloCaso,
                 onValorChange = { viewModel.onTituloCasoChange(it) },
                 modifier = Modifier.weight(1f)
@@ -120,7 +122,7 @@ fun EditarCasoScreen(
             logo = R.drawable.ic_nav_clientes_off
         )
 
-        // Tarjeta de cliente
+        // Tarjeta de cliente (vinculada a la base de datos)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -144,13 +146,13 @@ fun EditarCasoScreen(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Emanuel Calvo",
+                        text = "Cliente vinculado",
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
                     )
                     Text(
-                        text = "Cliente vinculado",
+                        text = "Cargado desde expediente",
                         color = Color.Gray,
                         fontSize = 12.sp
                     )
@@ -161,22 +163,7 @@ fun EditarCasoScreen(
                     tint = Color.Gray,
                     modifier = Modifier.size(24.dp)
                 )
-                Spacer(modifier = Modifier.width(8.dp))
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowUp,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(24.dp)
-                )
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun EditarCasoPreview() {
-    LegallyTheme {
-        EditarCasoScreen(caseId = "123", onBack = {}, onSave = {}, onDelete = {}, onDuplicate = {})
     }
 }

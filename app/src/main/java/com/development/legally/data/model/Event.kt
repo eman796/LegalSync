@@ -8,7 +8,11 @@ import com.google.firebase.firestore.PropertyName
 @IgnoreExtraProperties
 data class Event(
     @DocumentId
-    val id: String = "",
+    val eventId: String = "",
+
+    @get:PropertyName("id")
+    @set:PropertyName("id")
+    var id: String = "",
 
     @get:PropertyName("TituloEvento")
     @set:PropertyName("TituloEvento")

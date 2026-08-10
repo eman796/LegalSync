@@ -9,7 +9,6 @@ import kotlinx.coroutines.tasks.await
 
 class CaseRepository {
 
-    // Usamos lazy para evitar que se acceda a Firebase durante el renderizado del Preview
     private val firestore by lazy { Firebase.firestore }
     private val casesCollection by lazy { firestore.collection("Expedientes") }
 
@@ -52,6 +51,7 @@ class CaseRepository {
     suspend fun createCase(case: Case): Result<Unit> {
         return try {
             val docRef = casesCollection.document()
+            // Asignamos el ID generado tanto al campo interno como al objeto
             val caseWithId = case.copy(id = docRef.id)
             docRef.set(caseWithId).await()
             Result.success(Unit)
@@ -62,7 +62,11 @@ class CaseRepository {
 
     suspend fun updateCase(case: Case): Result<Unit> {
         return try {
-            casesCollection.document(case.id).set(case).await()
+            // Usamos firestoreDocId si está disponible, o el campo id como fallback
+            val docId = case.firestoreDocId.ifBlank { case.id }
+            if (docId.isBlank()) return Result.failure(Exception("ID de documento no válido"))
+            
+            casesCollection.document(docId).set(case).await()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)

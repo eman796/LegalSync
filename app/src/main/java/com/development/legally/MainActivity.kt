@@ -14,7 +14,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.development.legally.data.repository.AuthRepository
 import com.development.legally.ui.Editar.EditarCasoScreen
-import com.development.legally.ui.Editar.EditarClienteScreen
 import com.development.legally.ui.Editar.EditarEventoScreen
 import com.development.legally.ui.Nuevo.NuevoCasoScreen
 import com.development.legally.ui.Nuevo.NuevoClienteScreen
@@ -25,6 +24,7 @@ import com.development.legally.ui.auth.RegistrationScreen
 import com.development.legally.ui.auth.WelcomeScreen
 import com.development.legally.ui.cases.CasesScreen
 import com.development.legally.ui.clients.ClientsScreen
+import com.development.legally.ui.clients.EditClientScreen
 import com.development.legally.ui.home.HomeScreen
 import com.development.legally.ui.navigation.Screen
 import com.development.legally.ui.theme.LegallyTheme
@@ -53,6 +53,12 @@ fun LegallyApp() {
         Screen.Welcome.route
     }
     val navController = rememberNavController()
+
+    val navigateToHome = {
+        navController.navigate(Screen.Home.route) {
+            popUpTo(0) { inclusive = true }
+        }
+    }
 
     val onLogout = {
         authRepository.logout()
@@ -89,12 +95,14 @@ fun LegallyApp() {
 
         composable("edit_client/{clientId}") { it ->
             val clientId = it.arguments?.getString("clientId")
-            EditarClienteScreen(
+            EditClientScreen(
                 clientId = clientId,
-                onBack = { navController.popBackStack() },
-                onSave = { navController.popBackStack() },
-                onDelete = { navController.popBackStack() },
-                onDuplicate = { }
+                onNavigateBack = { navController.popBackStack() },
+                onNavigateToHome = { navigateToHome() },
+                onNavigateToClients = { navController.navigate(Screen.Clients.route) },
+                onNavigateToCases = { navController.navigate(Screen.Cases.route) },
+                onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
+                onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) }
             )
         }
 
@@ -117,7 +125,7 @@ fun LegallyApp() {
                 onLogout = onLogout,
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) }, // Cambiado a NewCase o ruta correcta
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
@@ -130,9 +138,9 @@ fun LegallyApp() {
         composable(Screen.Cases.route) {
             CasesScreen(
                 onLogout = onLogout,
-                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToHome = { navigateToHome() },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
@@ -143,10 +151,10 @@ fun LegallyApp() {
         composable(Screen.Agenda.route) {
             AgendaScreen(
                 onLogout = onLogout,
-                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToHome = { navigateToHome() },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
                 onNavigateToEditEvent = { id -> navController.navigate("edit_event/$id") }
@@ -156,10 +164,10 @@ fun LegallyApp() {
         composable(Screen.Clients.route) {
             ClientsScreen(
                 onLogout = onLogout,
-                onNavigateToHome = { navController.navigate(Screen.Home.route) },
+                onNavigateToHome = { navigateToHome() },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToEditClient = { id -> navController.navigate("edit_client/$id") }
