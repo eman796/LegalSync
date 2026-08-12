@@ -9,11 +9,11 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.painterResource
@@ -267,6 +267,7 @@ private fun InputField(
     onClick: (() -> Unit)? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
 
     Column(modifier = modifier) {
         Text(label, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
@@ -278,30 +279,45 @@ private fun InputField(
                     .height(if (isMultiline) 120.dp else 45.dp)
                     .background(FigmaFieldBackground, RoundedCornerShape(8.dp))
                     .clickable {
-                        if (isDropdown) {
-                            if (options != null) expanded = true else onClick?.invoke()
-                        }
+                        if (isDropdown && options != null) expanded = true
+                        else if (onClick != null) onClick()
+                        else focusRequester.requestFocus()
                     }
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = 12.dp, vertical = if (isMultiline) 8.dp else 0.dp),
                 verticalAlignment = if (isMultiline) Alignment.Top else Alignment.CenterVertically
             ) {
-                if (leadingIcon != null) { leadingIcon(); Spacer(Modifier.width(8.dp)) }
+                if (leadingIcon != null) {
+                    Box(modifier = Modifier.padding(top = if (isMultiline) 12.dp else 0.dp)) {
+                        leadingIcon()
+                    }
+                    Spacer(Modifier.width(8.dp))
+                }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
-                    readOnly = isDropdown,
-                    enabled = !isDropdown,
+                    readOnly = isDropdown || onClick != null,
+                    enabled = true,
                     textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
                     cursorBrush = SolidColor(Color.White),
-                    modifier = Modifier.weight(1f),
-                    decorationBox = { innerTextField -> innerTextField() }
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .focusRequester(focusRequester),
+                    decorationBox = { innerTextField ->
+                        Box(
+                            contentAlignment = if (isMultiline) Alignment.TopStart else Alignment.CenterStart,
+                            modifier = Modifier.padding(vertical = if (isMultiline) 12.dp else 0.dp)
+                        ) {
+                            innerTextField()
+                        }
+                    }
                 )
                 if (isDropdown) {
                     Icon(
                         painter = painterResource(id = R.drawable.boton_ir_a_lista_expedientes_expedientes),
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(16.dp).rotate(90f)
+                        modifier = Modifier.align(Alignment.CenterVertically).size(16.dp).rotate(90f)
                     )
                 }
             }
@@ -310,7 +326,7 @@ private fun InputField(
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(Color(0xFF171E27))
+                    modifier = Modifier.background(FigmaFieldBackground)
                 ) {
                     options.forEach { option ->
                         DropdownMenuItem(

@@ -3,7 +3,9 @@ package com.development.legally.ui.cases
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.development.legally.data.model.Case
+import com.development.legally.data.model.Client
 import com.development.legally.data.repository.CaseRepository
+import com.development.legally.data.repository.ClientRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,6 +21,9 @@ data class CasosUiState(
     val filterStatus: String = "Todos",
     val filterPriority: String = "Todas",
     
+    // Datos para dropdowns
+    val availableClients: List<Client> = emptyList(),
+    
     // Campos para edición
     val currentCaseId: String? = null,
     val numeroExpediente: String = "",
@@ -26,12 +31,15 @@ data class CasosUiState(
     val tipoProceso: String = "",
     val estadoCaso: String = "",
     val descripcion: String = "",
+    val clientId: String = "",
+    val clientName: String = "",
     val isSaving: Boolean = false,
     val isSaved: Boolean = false
 )
 
 class CasosViewModel : ViewModel() {
     private val repository = CaseRepository()
+    private val clientRepository = ClientRepository()
     private val _uiState = MutableStateFlow(CasosUiState())
     val uiState: StateFlow<CasosUiState> = _uiState.asStateFlow()
 
@@ -58,19 +66,24 @@ class CasosViewModel : ViewModel() {
         }
     }
 
+    fun loadDropdownData() {
+        viewModelScope.launch {
+            val clientsRes = clientRepository.getClients()
+            _uiState.update { it.copy(availableClients = clientsRes.getOrDefault(emptyList())) }
+        }
+    }
+
     fun setCaseForEditing(caseId: String?) {
-        if (caseId == null) {
+        loadDropdownData()
+        if (caseId == null || caseId == "new") {
             resetForm()
             return
         }
-        val case = _uiState.value.cases.find { it.firestoreDocId == caseId }
-        if (case != null) {
-            populateForm(case)
-        } else {
-            viewModelScope.launch {
-                val res = repository.getCaseById(caseId)
-                res.getOrNull()?.let { populateForm(it) }
-            }
+        _uiState.update { it.copy(loading = true, isSaved = false) }
+        viewModelScope.launch {
+            val res = repository.getCaseById(caseId)
+            res.getOrNull()?.let { populateForm(it) }
+            _uiState.update { it.copy(loading = false) }
         }
     }
 
@@ -81,14 +94,17 @@ class CasosViewModel : ViewModel() {
             tituloCaso = case.CaseTittle,
             tipoProceso = case.processType,
             estadoCaso = case.status,
-            descripcion = case.description
+            descripcion = case.description,
+            clientId = case.clientId,
+            clientName = case.clientName
         ) }
     }
 
     private fun resetForm() {
         _uiState.update { it.copy(
             currentCaseId = null,
-            numeroExpediente = "", tituloCaso = "", tipoProceso = "", estadoCaso = "", descripcion = ""
+            numeroExpediente = "", tituloCaso = "", tipoProceso = "Penal", estadoCaso = "Activo", descripcion = "",
+            clientId = "", clientName = ""
         ) }
     }
 
@@ -97,6 +113,14 @@ class CasosViewModel : ViewModel() {
     fun onTipoProcesoChange(v: String) { _uiState.update { it.copy(tipoProceso = v) } }
     fun onEstadoCasoChange(v: String) { _uiState.update { it.copy(estadoCaso = v) } }
     fun onDescripcionChange(v: String) { _uiState.update { it.copy(descripcion = v) } }
+    fun onClientNameChange(v: String) {
+        val client = _uiState.value.availableClients.find { "${it.name} ${it.lastName}" == v }
+        if (client != null) {
+            _uiState.update { it.copy(clientId = client.id, clientName = v) }
+        } else {
+            _uiState.update { it.copy(clientName = v) }
+        }
+    }
 
     fun updateSearchQuery(query: String) {
         _uiState.update { state ->
@@ -141,20 +165,24 @@ class CasosViewModel : ViewModel() {
 
     fun guardarCaso() {
         val state = _uiState.value
-        val caseId = state.currentCaseId ?: return
+        val caseId = state.currentCaseId
         
         _uiState.update { it.copy(isSaving = true) }
         
-        val caseToUpdate = state.cases.find { it.firestoreDocId == caseId }?.copy(
+        val caseToUpdate = Case(
+            firestoreDocId = caseId ?: "",
+            id = caseId ?: "",
             caseNumber = state.numeroExpediente,
             CaseTittle = state.tituloCaso,
             processType = state.tipoProceso,
             status = state.estadoCaso,
-            description = state.descripcion
-        ) ?: return
+            description = state.descripcion,
+            clientId = state.clientId,
+            clientName = state.clientName
+        )
 
         viewModelScope.launch {
-            val res = repository.updateCase(caseToUpdate)
+            val res = if (caseId == null) repository.createCase(caseToUpdate) else repository.updateCase(caseToUpdate)
             if (res.isSuccess) {
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
                 loadCasos()

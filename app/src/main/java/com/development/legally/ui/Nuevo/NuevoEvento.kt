@@ -1,20 +1,13 @@
 package com.development.legally.ui.Nuevo
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
 import com.development.legally.ui.ClasesSupremas.*
@@ -25,11 +18,16 @@ import com.development.legally.ui.theme.LegallyTheme
 fun NuevoEventoScreen(
     onBack: () -> Unit,
     onSave: () -> Unit,
-    viewModel: AgendaViewModel = viewModel() // Usamos el ViewModel unificado de Agenda
+    viewModel: AgendaViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Efecto para navegar hacia atrás cuando se guarda con éxito
+    // Cargar datos necesarios al iniciar y resetear formulario
+    LaunchedEffect(Unit) {
+        viewModel.setEventForEditing("new")
+    }
+
+    // Navegar atrás cuando se guarda con éxito
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onSave()
@@ -46,8 +44,11 @@ fun NuevoEventoScreen(
         lugar = uiState.lugar,
         descripcion = uiState.descripcion,
         casoRelacionado = uiState.casoRelacionado,
+        participante = uiState.participante,
         repetir = uiState.repetir,
         recordar = uiState.recordar,
+        availableCases = uiState.availableCases.map { it.caseNumber },
+        availableClients = uiState.availableClients.map { "${it.name} ${it.lastName}" },
         isSaving = uiState.isSaving,
         onBack = onBack,
         onSaveClick = { viewModel.guardarEvento() },
@@ -59,6 +60,7 @@ fun NuevoEventoScreen(
         onLugarChange = { viewModel.onLugarChange(it) },
         onDescripcionChange = { viewModel.onDescripcionChange(it) },
         onCasoRelacionadoChange = { viewModel.onCasoRelacionadoChange(it) },
+        onParticipanteChange = { viewModel.onParticipanteChange(it) },
         onRepetirChange = { viewModel.onRepetirChange(it) },
         onRecordarChange = { viewModel.onRecordarChange(it) }
     )
@@ -74,8 +76,11 @@ fun NuevoEventoContent(
     lugar: String,
     descripcion: String,
     casoRelacionado: String,
+    participante: String,
     repetir: String,
     recordar: String,
+    availableCases: List<String>,
+    availableClients: List<String>,
     isSaving: Boolean,
     onBack: () -> Unit,
     onSaveClick: () -> Unit,
@@ -87,16 +92,15 @@ fun NuevoEventoContent(
     onLugarChange: (String) -> Unit,
     onDescripcionChange: (String) -> Unit,
     onCasoRelacionadoChange: (String) -> Unit,
+    onParticipanteChange: (String) -> Unit,
     onRepetirChange: (String) -> Unit,
     onRecordarChange: (String) -> Unit
 ) {
     val tiposOptions = listOf("Audiencia", "Cita", "Reunión", "Juicio", "Visita", "Otro")
-    val estadosOptions = listOf("Pendiente", "En Progreso", "Completado", "Cancelado", "Ocupado")
-    val duracionesOptions = listOf("30 min", "1 hora", "2 horas", "Todo el día")
-    val lugaresOptions = listOf("Oficina Principal", "Juzgado de San José", "Penal La Reforma", "Virtual", "Otro")
-    val casosOptions = listOf("25-000044-033-PE - Peculado", "En desarrollo...")
+    val estadosOptions = listOf("Disponible", "Ocupado", "Pendiente", "Completado")
+    val duracionesOptions = listOf("15 min", "30 min", "1 hora", "2 horas", "Todo el día")
     val repetirOptions = listOf("Nunca", "Diariamente", "Semanalmente", "Mensualmente")
-    val recordarOptions = listOf("Sin aviso", "15 min antes", "30 min antes", "1 hora antes", "24 horas antes")
+    val recordarOptions = listOf("Sin aviso", "5 min antes", "15 min antes", "30 min antes", "1 hora antes")
 
     BaseFormScreen(
         title = "Nuevo evento",
@@ -110,7 +114,7 @@ fun NuevoEventoContent(
             icon = { Icon(painterResource(id = R.drawable.ic_expedientes_edit), null, tint = Color(0xFF9E8D44)) }
         )
 
-        FormElement("Título del Evento", "Ej: Audiencia Preliminar", FormDataType.STRING, titulo, onTituloChange)
+        FormElement("Título del Evento *", "Ej: Audiencia Preliminar", FormDataType.STRING, titulo, onTituloChange)
 
         Spacer(Modifier.height(16.dp))
 
@@ -123,14 +127,15 @@ fun NuevoEventoContent(
         Spacer(Modifier.height(16.dp))
 
         Row(Modifier.fillMaxWidth()) {
-            FormElement("Fecha y hora", "00/00/0000 00:00", FormDataType.DATETIME, fechaHora, onFechaHoraChange, modifier = Modifier.weight(1f))
+            // Unificado Fecha y Hora en un solo FormElement de tipo DATETIME
+            FormElement("Fecha y hora", "dd/MM/yyyy HH:mm", FormDataType.DATETIME, fechaHora, onFechaHoraChange, modifier = Modifier.weight(1f))
             Spacer(Modifier.width(16.dp))
             FormElement("Duración", "Seleccionar", FormDataType.LIST, duracion, onDuracionChange, modifier = Modifier.weight(1f), options = duracionesOptions)
         }
 
         Spacer(Modifier.height(16.dp))
 
-        FormElement("Lugar del evento", "Seleccionar lugar", FormDataType.LIST, lugar, onLugarChange, options = lugaresOptions)
+        FormElement("Lugar del evento", "Ingrese ubicación...", FormDataType.STRING, lugar, onLugarChange)
 
         Spacer(Modifier.height(16.dp))
 
@@ -146,28 +151,13 @@ fun NuevoEventoContent(
 
         Spacer(Modifier.height(16.dp))
 
-        FormElement("Caso relacionado", "Vincular expediente...", FormDataType.LIST, casoRelacionado, onCasoRelacionadoChange, options = casosOptions)
+        FormElement("Caso relacionado", "Vincular expediente...", FormDataType.LIST, casoRelacionado, onCasoRelacionadoChange, options = availableCases)
 
         FormSectionHeader(title = "Quienes participan")
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF171E27), RoundedCornerShape(12.dp))
-                .padding(16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(48.dp).background(Color(0xFF0D1117), RoundedCornerShape(24.dp)))
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Emanuel Calvo", color = Color.White, fontWeight = FontWeight.Bold)
-                    Text("Cédula: 5-0456-0691", color = Color.Gray, fontSize = 12.sp)
-                }
-                Icon(Icons.Default.Add, null, tint = Color.Gray, modifier = Modifier.size(32.dp))
-            }
-        }
+        FormElement("Participantes", "Seleccionar cliente...", FormDataType.LIST, participante, onParticipanteChange, options = availableClients)
 
-        FormSectionHeader(title = "Repeticiones")
+        FormSectionHeader(title = "Repeticiones y Avisos")
 
         Row(Modifier.fillMaxWidth()) {
             FormElement("Repetir", "Nunca", FormDataType.LIST, repetir, onRepetirChange, modifier = Modifier.weight(1f), options = repetirOptions)
@@ -176,37 +166,5 @@ fun NuevoEventoContent(
         }
 
         Spacer(Modifier.height(24.dp))
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun NuevoEventoScreenPreview() {
-    LegallyTheme {
-        NuevoEventoContent(
-            titulo = "",
-            tipo = "",
-            estado = "",
-            fechaHora = "",
-            duracion = "",
-            lugar = "",
-            descripcion = "",
-            casoRelacionado = "",
-            repetir = "",
-            recordar = "",
-            isSaving = false,
-            onBack = {},
-            onSaveClick = {},
-            onTituloChange = {},
-            onTipoChange = {},
-            onEstadoChange = {},
-            onFechaHoraChange = {},
-            onDuracionChange = {},
-            onLugarChange = {},
-            onDescripcionChange = {},
-            onCasoRelacionadoChange = {},
-            onRepetirChange = {},
-            onRecordarChange = {}
-        )
     }
 }

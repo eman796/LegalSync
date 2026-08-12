@@ -1,27 +1,14 @@
 package com.development.legally.ui.Editar
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
 import com.development.legally.ui.ClasesSupremas.EdicionSuprema
 import com.development.legally.ui.cases.CasosViewModel
-import com.development.legally.ui.theme.LegallyTheme
 
 @Composable
 fun EditarCasoScreen(
@@ -34,14 +21,16 @@ fun EditarCasoScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Disparar la carga del caso real desde Firebase al entrar
+    // Opciones para los desplegables
+    val tiposProceso = listOf("Penal", "Civil", "Laboral", "Familia", "Administrativo", "Otro")
+    val estadosCaso = listOf("Activo", "En proceso", "Pendiente", "Finalizado", "Archivado")
+
+    // Cargar datos del caso y clientes al entrar
     LaunchedEffect(caseId) {
-        if (caseId != null) {
-            viewModel.setCaseForEditing(caseId)
-        }
+        viewModel.setCaseForEditing(caseId)
     }
 
-    // Regresar cuando se confirme el guardado
+    // Navegar atrás al guardar con éxito
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onSave()
@@ -51,7 +40,7 @@ fun EditarCasoScreen(
 
     EdicionSuprema.PantallaBase(
         titulo = "Editar Caso",
-        textoBotonGuardar = if (uiState.isSaving) "Guardando..." else "Guardar caso",
+        textoBotonGuardar = if (uiState.isSaving) "Guardando..." else "Guardar cambios",
         textoBotonEliminar = "Eliminar caso",
         onAtras = onBack,
         onCancelar = onBack,
@@ -90,6 +79,7 @@ fun EditarCasoScreen(
                 placeholder = "Seleccione...",
                 tipo = EdicionSuprema.TipoDato.LISTA,
                 valor = uiState.tipoProceso,
+                options = tiposProceso,
                 onValorChange = { viewModel.onTipoProcesoChange(it) },
                 modifier = Modifier.weight(1f)
             )
@@ -99,6 +89,7 @@ fun EditarCasoScreen(
                 placeholder = "Seleccione...",
                 tipo = EdicionSuprema.TipoDato.LISTA,
                 valor = uiState.estadoCaso,
+                options = estadosCaso,
                 onValorChange = { viewModel.onEstadoCasoChange(it) },
                 modifier = Modifier.weight(1f)
             )
@@ -118,52 +109,18 @@ fun EditarCasoScreen(
         Spacer(modifier = Modifier.height(8.dp))
 
         EdicionSuprema.TituloSeccion(
-            titulo = "Cliente",
+            titulo = "Cliente vinculado",
             logo = R.drawable.ic_nav_clientes_off
         )
 
-        // Tarjeta de cliente (vinculada a la base de datos)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF171E27), RoundedCornerShape(12.dp))
-                .padding(16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .background(Color(0xFF0D1117), RoundedCornerShape(24.dp)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_nav_clientes_off),
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "Cliente vinculado",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "Cargado desde expediente",
-                        color = Color.Gray,
-                        fontSize = 12.sp
-                    )
-                }
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    tint = Color.Gray,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-        }
+        // Selector de cliente unificado
+        EdicionSuprema.ElementoEdicion(
+            titulo = "Seleccionar Cliente",
+            placeholder = "Haga clic para seleccionar...",
+            tipo = EdicionSuprema.TipoDato.LISTA,
+            valor = uiState.clientName,
+            options = uiState.availableClients.map { "${it.name} ${it.lastName}" },
+            onValorChange = { viewModel.onClientNameChange(it) }
+        )
     }
 }

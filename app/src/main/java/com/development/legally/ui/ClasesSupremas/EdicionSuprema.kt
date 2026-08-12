@@ -28,6 +28,8 @@ import com.development.legally.R
 import com.development.legally.ui.theme.FigmaBackground
 import com.development.legally.ui.theme.FigmaGold
 import com.development.legally.ui.theme.LegallyTheme
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
  * CLASE SUPREMA DE EDICIÓN
@@ -75,7 +77,7 @@ object EdicionSuprema {
             )
         }
 
-        // Diálogo de Eliminación (Punto 1 solicitado)
+        // Diálogo de Eliminación
         if (mostrarDialogoEliminar) {
             AlertDialog(
                 onDismissRequest = { mostrarDialogoEliminar = false },
@@ -208,6 +210,7 @@ object EdicionSuprema {
         }
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun ElementoEdicion(
         titulo: String,
@@ -221,8 +224,55 @@ object EdicionSuprema {
         height: Dp = 50.dp,
         leadingIcon: (@Composable () -> Unit)? = null,
         maxChars: Int? = null,
+        options: List<String>? = null,
         modifier: Modifier = Modifier
     ) {
+        var expanded by remember { mutableStateOf(false) }
+        var showDatePicker by remember { mutableStateOf(false) }
+        var showTimePicker by remember { mutableStateOf(false) }
+        var tempDate by remember { mutableStateOf("") }
+
+        if (showDatePicker) {
+            val datePickerState = rememberDatePickerState()
+            DatePickerDialog(
+                onDismissRequest = { showDatePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            tempDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
+                            showDatePicker = false
+                            showTimePicker = true
+                        }
+                    }) { Text("SIGUIENTE", color = FigmaGold) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDatePicker = false }) { Text("CANCELAR", color = Color.Gray) }
+                }
+            ) { DatePicker(state = datePickerState) }
+        }
+
+        if (showTimePicker) {
+            val timePickerState = rememberTimePickerState()
+            AlertDialog(
+                onDismissRequest = { showTimePicker = false },
+                confirmButton = {
+                    TextButton(onClick = {
+                        val formattedTime = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
+                        onValorChange("$tempDate $formattedTime")
+                        showTimePicker = false
+                    }) { Text("ACEPTAR", color = FigmaGold) }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showTimePicker = false }) { Text("ATRÁS", color = Color.Gray) }
+                },
+                text = {
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
+                        TimePicker(state = timePickerState)
+                    }
+                }
+            )
+        }
+
         Column(
             modifier = modifier
                 .padding(start = posX, top = posY)
@@ -231,19 +281,25 @@ object EdicionSuprema {
             Text(text = titulo, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(8.dp))
 
-            if (tipo == TipoDato.LISTA) {
+            if (tipo == TipoDato.LISTA || tipo == TipoDato.FECHA) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(height)
                         .background(Color(0xFF171E27), RoundedCornerShape(12.dp))
                         .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
-                        .clickable { }
+                        .clickable { 
+                            if (tipo == TipoDato.FECHA) {
+                                showDatePicker = true
+                            } else {
+                                expanded = true
+                            }
+                        }
                         .padding(horizontal = 12.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
                             if (leadingIcon != null) {
                                 leadingIcon()
                                 Spacer(modifier = Modifier.width(8.dp))
@@ -251,10 +307,31 @@ object EdicionSuprema {
                             Text(
                                 text = if (valor.isEmpty()) placeholder else valor,
                                 color = Color.White.copy(alpha = if (valor.isEmpty()) 0.5f else 1f),
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
-                        Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
+                        val iconRes = if (tipo == TipoDato.FECHA) R.drawable.ic_card_clock_figma else R.drawable.ic_arrow_right_gold
+                        Icon(painter = painterResource(id = iconRes), contentDescription = null, tint = FigmaGold, modifier = Modifier.size(16.dp))
+                    }
+
+                    if (options != null) {
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.background(Color(0xFF171E27))
+                        ) {
+                            options.forEach { option ->
+                                DropdownMenuItem(
+                                    text = { Text(text = option, color = Color.White) },
+                                    onClick = {
+                                        onValorChange(option)
+                                        expanded = false
+                                    }
+                                )
+                            }
+                        }
                     }
                 }
             } else {
@@ -291,5 +368,5 @@ object EdicionSuprema {
         }
     }
 
-    enum class TipoDato { STRING, ENTERO, LISTA }
+    enum class TipoDato { STRING, ENTERO, LISTA, FECHA }
 }

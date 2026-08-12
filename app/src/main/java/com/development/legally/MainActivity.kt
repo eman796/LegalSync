@@ -73,8 +73,8 @@ fun LegallyApp() {
         startDestination = startDestination
     ) {
         // --- RUTAS DE EDICIÓN ---
-        composable("edit_case/{caseId}") { it ->
-            val caseId = it.arguments?.getString("caseId")
+        composable("edit_case/{caseId}") { backStackEntry ->
+            val caseId = backStackEntry.arguments?.getString("caseId")
             EditarCasoScreen(
                 caseId = caseId,
                 onBack = { navController.popBackStack() },
@@ -84,8 +84,8 @@ fun LegallyApp() {
             )
         }
 
-        composable("edit_event/{eventId}") { it ->
-            val eventId = it.arguments?.getString("eventId")
+        composable("edit_event/{eventId}") { backStackEntry ->
+            val eventId = backStackEntry.arguments?.getString("eventId")
             EditarEventoScreen(
                 eventId = eventId,
                 onBack = { navController.popBackStack() },
@@ -93,8 +93,8 @@ fun LegallyApp() {
             )
         }
 
-        composable("edit_client/{clientId}") { it ->
-            val clientId = it.arguments?.getString("clientId")
+        composable("edit_client/{clientId}") { backStackEntry ->
+            val clientId = backStackEntry.arguments?.getString("clientId")
             EditClientScreen(
                 clientId = clientId,
                 onNavigateBack = { navController.popBackStack() },
@@ -125,7 +125,7 @@ fun LegallyApp() {
                 onLogout = onLogout,
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) }, // Cambiado a NewCase o ruta correcta
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
@@ -140,7 +140,7 @@ fun LegallyApp() {
                 onLogout = onLogout,
                 onNavigateToHome = { navigateToHome() },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
@@ -154,7 +154,7 @@ fun LegallyApp() {
                 onNavigateToHome = { navigateToHome() },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToClients = { navController.navigate(Screen.Clients.route) },
                 onNavigateToEditEvent = { id -> navController.navigate("edit_event/$id") }
@@ -167,7 +167,7 @@ fun LegallyApp() {
                 onNavigateToHome = { navigateToHome() },
                 onNavigateToCases = { navController.navigate(Screen.Cases.route) },
                 onNavigateToNewCase = { navController.navigate(Screen.NewCase.route) },
-                onNavigateToNewClient = { navController.navigate(Screen.NewCase.route) },
+                onNavigateToNewClient = { navController.navigate(Screen.NewClient.route) },
                 onNavigateToNewEvent = { navController.navigate(Screen.NewEvent.route) },
                 onNavigateToAgenda = { navController.navigate(Screen.Agenda.route) },
                 onNavigateToEditClient = { id -> navController.navigate("edit_client/$id") }

@@ -1,26 +1,16 @@
 package com.development.legally.ui.Editar
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
 import com.development.legally.ui.ClasesSupremas.EdicionSuprema
 import com.development.legally.ui.agenda.AgendaViewModel
-import com.development.legally.ui.theme.LegallyTheme
 
 @Composable
 fun EditarEventoScreen(
@@ -31,14 +21,17 @@ fun EditarEventoScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Cargamos los datos reales de Firebase usando el eventId
+    val tiposOptions = listOf("Audiencia", "Cita", "Reunión", "Juicio", "Visita", "Otro")
+    val estadosOptions = listOf("Disponible", "Ocupado", "Pendiente", "Completado")
+    val duracionesOptions = listOf("15 min", "30 min", "1 hora", "2 horas", "Todo el día")
+    val lugaresOptions = listOf("Oficina Principal", "Juzgado", "Virtual", "Otro")
+    val repetirOptions = listOf("Nunca", "Diariamente", "Semanalmente", "Mensualmente")
+    val recordarOptions = listOf("Sin aviso", "5 min antes", "15 min antes", "30 min antes", "1 hora antes")
+
     LaunchedEffect(eventId) {
-        if (eventId != null) {
-            viewModel.setEventForEditing(eventId)
-        }
+        viewModel.setEventForEditing(eventId)
     }
 
-    // Regresar cuando el guardado sea exitoso
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             onSave()
@@ -60,10 +53,8 @@ fun EditarEventoScreen(
             logo = R.drawable.ic_expedientes_edit
         )
 
-
-        // IMPORTANTE: Aquí ya no hay datos dummies, usamos uiState directamente
         EdicionSuprema.ElementoEdicion(
-            titulo = "Título del Evento",
+            titulo = "Título del Evento *",
             placeholder = "Ingrese título...",
             valor = uiState.titulo,
             onValorChange = { viewModel.onTituloChange(it) }
@@ -77,6 +68,7 @@ fun EditarEventoScreen(
                 placeholder = "Seleccionar",
                 tipo = EdicionSuprema.TipoDato.LISTA,
                 valor = uiState.tipo,
+                options = tiposOptions,
                 onValorChange = { viewModel.onTipoChange(it) },
                 modifier = Modifier.weight(1f)
             )
@@ -86,6 +78,7 @@ fun EditarEventoScreen(
                 placeholder = "Seleccionar",
                 tipo = EdicionSuprema.TipoDato.LISTA,
                 valor = uiState.estado,
+                options = estadosOptions,
                 onValorChange = { viewModel.onEstadoChange(it) },
                 modifier = Modifier.weight(1f)
             )
@@ -96,8 +89,8 @@ fun EditarEventoScreen(
         Row(modifier = Modifier.fillMaxWidth()) {
             EdicionSuprema.ElementoEdicion(
                 titulo = "Fecha y hora",
-                placeholder = "dd/MM/yyyy HH:mm",
-                tipo = EdicionSuprema.TipoDato.LISTA,
+                placeholder = "Seleccionar fecha...",
+                tipo = EdicionSuprema.TipoDato.FECHA,
                 valor = uiState.fechaHora,
                 onValorChange = { viewModel.onFechaHoraChange(it) },
                 modifier = Modifier.weight(1f)
@@ -108,6 +101,7 @@ fun EditarEventoScreen(
                 placeholder = "Seleccionar",
                 tipo = EdicionSuprema.TipoDato.LISTA,
                 valor = uiState.duracion,
+                options = duracionesOptions,
                 onValorChange = { viewModel.onDuracionChange(it) },
                 modifier = Modifier.weight(1f)
             )
@@ -118,7 +112,7 @@ fun EditarEventoScreen(
         EdicionSuprema.ElementoEdicion(
             titulo = "Lugar del evento",
             placeholder = "Seleccione ubicación...",
-            tipo = EdicionSuprema.TipoDato.LISTA,
+            tipo = EdicionSuprema.TipoDato.STRING,
             valor = uiState.lugar,
             onValorChange = { viewModel.onLugarChange(it) },
             leadingIcon = { Icon(painterResource(R.drawable.ic_location_pin), null, tint = Color.White, modifier = Modifier.size(20.dp)) }
@@ -142,28 +136,20 @@ fun EditarEventoScreen(
             placeholder = "Seleccione caso...",
             tipo = EdicionSuprema.TipoDato.LISTA,
             valor = uiState.casoRelacionado,
+            options = uiState.availableCases.map { it.caseNumber },
             onValorChange = { viewModel.onCasoRelacionadoChange(it) }
         )
 
         EdicionSuprema.TituloSeccion(titulo = "Quienes participan")
 
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF171E27), RoundedCornerShape(12.dp))
-                .padding(16.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(modifier = Modifier.size(48.dp).background(Color(0xFF0D1117), RoundedCornerShape(24.dp)))
-                Spacer(modifier = Modifier.width(12.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    // Muestra el participante real de Firebase
-                    Text(text = uiState.participante.ifBlank { "Participante" }, color = Color.White, fontWeight = FontWeight.Bold)
-                    Text(text = "Persona vinculada", color = Color.Gray, fontSize = 12.sp)
-                }
-                Icon(Icons.Default.Add, null, tint = Color.Gray)
-            }
-        }
+        EdicionSuprema.ElementoEdicion(
+            titulo = "Participantes",
+            placeholder = "Seleccione participantes...",
+            tipo = EdicionSuprema.TipoDato.LISTA,
+            valor = uiState.participante,
+            options = uiState.availableClients.map { "${it.name} ${it.lastName}" },
+            onValorChange = { viewModel.onParticipanteChange(it) }
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -172,6 +158,7 @@ fun EditarEventoScreen(
                 titulo = "Repetir",
                 placeholder = "Nunca",
                 tipo = EdicionSuprema.TipoDato.LISTA,
+                options = repetirOptions,
                 valor = uiState.repetir,
                 onValorChange = { viewModel.onRepetirChange(it) },
                 modifier = Modifier.weight(1f)
@@ -181,6 +168,7 @@ fun EditarEventoScreen(
                 titulo = "Recordar antes de:",
                 placeholder = "Sin aviso",
                 tipo = EdicionSuprema.TipoDato.LISTA,
+                options = recordarOptions,
                 valor = uiState.recordar,
                 onValorChange = { viewModel.onRecordarChange(it) },
                 modifier = Modifier.weight(1f)

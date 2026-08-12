@@ -6,12 +6,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.data.model.Event
@@ -35,7 +32,6 @@ fun AgendaScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Cargar eventos reales desde Firebase al iniciar
     LaunchedEffect(Unit) {
         viewModel.loadEvents()
     }
@@ -52,7 +48,8 @@ fun AgendaScreen(
         onNavigateToEditEvent = onNavigateToEditEvent,
         onSearch = { viewModel.updateSearchQuery(it) },
         onDayFilterSelected = { viewModel.updateDayFilter(it) },
-        onTypeFilterSelected = { viewModel.updateTypeFilter(it) }
+        onTypeFilterSelected = { viewModel.updateTypeFilter(it) },
+        viewModel = viewModel
     )
 }
 
@@ -69,7 +66,8 @@ fun AgendaContent(
     onNavigateToEditEvent: (String) -> Unit,
     onSearch: (String) -> Unit,
     onDayFilterSelected: (String) -> Unit,
-    onTypeFilterSelected: (String) -> Unit
+    onTypeFilterSelected: (String) -> Unit,
+    viewModel: AgendaViewModel
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
 
@@ -146,7 +144,8 @@ fun AgendaContent(
                     } else {
                         AgendaList(
                             events = uiState.filteredEvents,
-                            onEventClick = onNavigateToEditEvent
+                            onEventClick = onNavigateToEditEvent,
+                            viewModel = viewModel
                         )
                     }
                 }
@@ -176,7 +175,8 @@ fun AgendaContent(
 @Composable
 fun AgendaList(
     events: List<Event>,
-    onEventClick: (String) -> Unit
+    onEventClick: (String) -> Unit,
+    viewModel: AgendaViewModel
 ) {
     if (events.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -189,43 +189,17 @@ fun AgendaList(
         ) {
             items(events) { event ->
                 MasterAgendaItem(
-                    time = event.duracion,
-                    caseNumber = event.casoRelacionado,
-                    title = event.titulo,
+                    time = event.estado.ifEmpty { "Sin Estado" }, // Mostramos Disponibilidad como texto principal
+                    title = viewModel.formatEventTimeRange(event), // Rango de horas en el título secundario
+                    caseNumber = "${event.titulo} (${event.casoRelacionado})", // Título y Caso abajo
                     statusColor = when(event.tipo) {
                         "Audiencia" -> Color(0xFFFFB74D)
                         "Reunión" -> Color(0xFF81C784)
                         else -> Color(0xFFFFF176)
                     },
-                    onClick = { onEventClick(event.id) }
+                    onClick = { onEventClick(event.eventId) }
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun AgendaScreenPreview() {
-    LegallyTheme {
-        // Preview con tus datos reales de Firebase para verificar visualmente
-        AgendaContent(
-            uiState = AgendaUiState(
-                isLoading = false,
-                filteredEvents = listOf(
-                    Event(
-                        titulo = "Jihyo Closet",
-                        tipo = "Audiencia",
-                        duracion = "30 min",
-                        casoRelacionado = "En desarrollo...",
-                        estado = "Completado"
-                    )
-                )
-            ),
-            onLogout = {}, onNavigateToHome = {}, onNavigateToCases = {},
-            onNavigateToNewCase = {}, onNavigateToNewClient = {}, onNavigateToNewEvent = {},
-            onNavigateToClients = {}, onNavigateToEditEvent = {},
-            onSearch = {}, onDayFilterSelected = {}, onTypeFilterSelected = {}
-        )
     }
 }
