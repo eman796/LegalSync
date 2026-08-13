@@ -189,13 +189,16 @@ fun AgendaList(
         ) {
             items(events) { event ->
                 MasterAgendaItem(
-                    time = event.estado.ifEmpty { "Sin Estado" }, // Mostramos Disponibilidad como texto principal
-                    title = viewModel.formatEventTimeRange(event), // Rango de horas en el título secundario
-                    caseNumber = "${event.titulo} (${event.casoRelacionado})", // Título y Caso abajo
-                    statusColor = when(event.tipo) {
-                        "Audiencia" -> Color(0xFFFFB74D)
-                        "Reunión" -> Color(0xFF81C784)
-                        else -> Color(0xFFFFF176)
+                    time = event.estado.ifEmpty { "Sin Estado" },
+                    title = viewModel.formatEventTimeRange(event),
+                    caseNumber = "${event.titulo} (${event.casoRelacionado})",
+                    // Fix 2: Bolita de estado basada en event.estado
+                    statusColor = when(event.estado) {
+                        "Disponible" -> Color(0xFF81C784) // Verde
+                        "Ocupado" -> Color(0xFFE57373)    // Rojo
+                        "Pendiente" -> Color(0xFFFFF176)   // Amarillo
+                        "Completado" -> Color(0xFF64B5F6)  // Azul
+                        else -> Color(0xFF9E8D44)          // Dorado (default)
                     },
                     onClick = { onEventClick(event.eventId) }
                 )

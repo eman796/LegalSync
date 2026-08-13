@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
 import com.development.legally.data.model.Client
+import com.development.legally.ui.ClasesSupremas.EdicionSuprema
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import java.text.SimpleDateFormat
 import java.util.*
@@ -55,11 +56,14 @@ fun EditClientScreen(
     var phone by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
+    var documentNumber by remember { mutableStateOf("") }
 
     var showDatePicker by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
+
+    val uiState by viewModel.uiState.collectAsState()
 
     LaunchedEffect(clientId) {
         if (clientId != null && clientId != "new" && clientId.isNotEmpty()) {
@@ -74,8 +78,16 @@ fun EditClientScreen(
                     phone = it.phone
                     address = it.address
                     description = it.description
+                    documentNumber = it.documentNumber
                 }
             }
+        }
+    }
+
+    LaunchedEffect(uiState.isSaved) {
+        if (uiState.isSaved) {
+            viewModel.resetSaveState()
+            onNavigateBack()
         }
     }
 
@@ -97,77 +109,88 @@ fun EditClientScreen(
         ) { DatePicker(state = datePickerState) }
     }
 
-    Scaffold(
-        bottomBar = {
-            LegallyBottomNavigationBar(
-                currentRoute = "clients",
-                onInicioClick = onNavigateToHome,
-                onExpedientesClick = onNavigateToCases,
-                onCrearClick = onNavigateToNewCase,
-                onAgendaClick = onNavigateToAgenda,
-                onClientesClick = onNavigateToClients
-            )
-        },
-        containerColor = FigmaBackground
-    ) { paddingValues ->
-        EditClientContent(
-            modifier = modifier.padding(paddingValues),
-            name = name,
-            onNameChange = { name = it },
-            lastName = lastName,
-            onLastNameChange = { lastName = it },
-            personType = personType,
-            onPersonTypeChange = { personType = it },
-            birthDate = birthDate,
-            onBirthDateClick = { showDatePicker = true },
-            nationality = nationality,
-            onNationalityChange = { nationality = it },
-            email = email,
-            onEmailChange = { email = it },
-            phone = phone,
-            onPhoneChange = { phone = it },
-            address = address,
-            onAddressChange = { address = it },
-            description = description,
-            onDescriptionChange = { description = it },
-            onNavigateBack = onNavigateBack,
-            isLoading = isLoading,
-            onSaveClick = {
-                if (name.isNotBlank() && lastName.isNotBlank() && email.isNotBlank()) {
-                    isLoading = true
-                    val client = Client(
-                        id = if (clientId == "new" || clientId == null) "" else clientId,
-                        name = name,
-                        lastName = lastName,
-                        personType = personType,
-                        birthDate = birthDate,
-                        nationality = nationality,
-                        email = email,
-                        phone = phone,
-                        address = address,
-                        description = description
-                    )
-                    val callback = { success: Boolean, error: String? ->
-                        isLoading = false
-                        if (success) onNavigateBack()
-                        else { errorMessage = error ?: "Error"; showErrorDialog = true }
-                    }
-                    if (clientId == null || clientId == "new") viewModel.createClient(client, callback)
-                    else viewModel.updateClient(client, callback)
-                }
-            },
-            onDeleteClick = {
-                clientId?.let {
-                    if (it != "new") {
-                        isLoading = true
-                        viewModel.deleteClient(it) { s, e ->
-                            isLoading = false
-                            if (s) onNavigateBack() else { errorMessage = e ?: "Error"; showErrorDialog = true }
-                        }
-                    }
-                }
+    // Usamos PantallaBase de EdicionSuprema para tener el botón duplicar arriba
+    EdicionSuprema.PantallaBase(
+        titulo = "Información del Cliente",
+        textoBotonGuardar = if (uiState.isSaving) "Guardando..." else "Guardar Cambios",
+        textoBotonEliminar = "Eliminar Cliente",
+        onAtras = onNavigateBack,
+        onCancelar = onNavigateBack,
+        onGuardar = {
+            if (name.isNotBlank() && lastName.isNotBlank()) {
+                val client = Client(
+                    id = clientId ?: "",
+                    name = name,
+                    lastName = lastName,
+                    personType = personType,
+                    birthDate = birthDate,
+                    nationality = nationality,
+                    email = email,
+                    phone = phone,
+                    address = address,
+                    description = description,
+                    documentNumber = documentNumber
+                )
+                viewModel.updateClient(client) { _, _ -> }
             }
-        )
+        },
+        onDuplicar = {
+             val currentClient = Client(
+                name = name,
+                lastName = lastName,
+                personType = personType,
+                birthDate = birthDate,
+                nationality = nationality,
+                email = email,
+                phone = phone,
+                address = address,
+                description = description,
+                documentNumber = documentNumber
+            )
+            viewModel.duplicarClient(currentClient) { _, _ -> }
+        },
+        onEliminar = {
+            clientId?.let { viewModel.deleteClient(it) { success, _ -> if (success) onNavigateBack() } }
+        }
+    ) {
+        Row(modifier = Modifier.fillMaxWidth()) {
+            InputField("Nombre *", name, { name = it }, Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(12.dp))
+            InputField("Apellido *", lastName, { lastName = it }, Modifier.weight(1f))
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Row(modifier = Modifier.fillMaxWidth()) {
+            InputField(
+                label = "Tipo de Persona",
+                value = personType,
+                onValueChange = { personType = it },
+                modifier = Modifier.weight(1f),
+                isDropdown = true,
+                options = listOf("Física", "Jurídica")
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            InputField(
+                label = "Nacionalidad",
+                value = nationality,
+                onValueChange = { nationality = it },
+                modifier = Modifier.weight(1f),
+                isDropdown = true,
+                options = listOf("Costa Rica", "Nicaragua", "Panamá", "Estados Unidos", "Otra")
+            )
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        InputField("Identificación", documentNumber, { documentNumber = it }, Modifier.fillMaxWidth())
+        Spacer(modifier = Modifier.height(12.dp))
+        InputField("Fecha de Nacimiento", birthDate, {}, Modifier.fillMaxWidth(), isDropdown = true, onClick = { showDatePicker = true })
+
+        Spacer(modifier = Modifier.height(24.dp))
+        InputField("Email *", email, { email = it }, leadingIcon = { Icon(painterResource(R.drawable.boton_notificaciones_expedientes), null, tint = Color.DarkGray, modifier = Modifier.size(20.dp)) })
+        Spacer(modifier = Modifier.height(12.dp))
+        InputField("Teléfono", phone, { phone = it }, leadingIcon = { Icon(painterResource(R.drawable.boton_usuario_expedientes), null, tint = Color.DarkGray, modifier = Modifier.size(20.dp)) })
+        Spacer(modifier = Modifier.height(12.dp))
+        InputField("Dirección", address, { address = it })
+        Spacer(modifier = Modifier.height(12.dp))
+        InputField("Descripción", description, { description = it }, isMultiline = true, modifier = Modifier.fillMaxWidth().height(150.dp))
     }
 
     if (showErrorDialog) {
@@ -177,80 +200,6 @@ fun EditClientScreen(
             text = { Text(errorMessage) },
             confirmButton = { TextButton(onClick = { showErrorDialog = false }) { Text("OK") } }
         )
-    }
-}
-
-@Composable
-private fun EditClientContent(
-    modifier: Modifier,
-    name: String, onNameChange: (String) -> Unit,
-    lastName: String, onLastNameChange: (String) -> Unit,
-    personType: String, onPersonTypeChange: (String) -> Unit,
-    birthDate: String, onBirthDateClick: () -> Unit,
-    nationality: String, onNationalityChange: (String) -> Unit,
-    email: String, onEmailChange: (String) -> Unit,
-    phone: String, onPhoneChange: (String) -> Unit,
-    address: String, onAddressChange: (String) -> Unit,
-    description: String, onDescriptionChange: (String) -> Unit,
-    onNavigateBack: () -> Unit,
-    isLoading: Boolean,
-    onSaveClick: () -> Unit,
-    onDeleteClick: () -> Unit
-) {
-    Column(modifier = modifier.fillMaxSize().imePadding().padding(horizontal = 16.dp).verticalScroll(rememberScrollState())) {
-        Spacer(modifier = Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(painterResource(R.drawable.ic_arrow_back), null, tint = FigmaGold, modifier = Modifier.size(24.dp).clickable { onNavigateBack() })
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Información del Cliente", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(modifier = Modifier.height(24.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            InputField("Nombre *", name, onNameChange, Modifier.weight(1f))
-            Spacer(modifier = Modifier.width(12.dp))
-            InputField("Apellido *", lastName, onLastNameChange, Modifier.weight(1f))
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        Row(modifier = Modifier.fillMaxWidth()) {
-            InputField(
-                label = "Tipo de Persona",
-                value = personType,
-                onValueChange = onPersonTypeChange,
-                modifier = Modifier.weight(1f),
-                isDropdown = true,
-                options = listOf("Física", "Jurídica")
-            )
-            Spacer(modifier = Modifier.width(12.dp))
-            InputField(
-                label = "Nacionalidad",
-                value = nationality,
-                onValueChange = onNationalityChange,
-                modifier = Modifier.weight(1f),
-                isDropdown = true,
-                options = listOf("Costa Rica", "Nicaragua", "Panama", "Estados Unidos", "Otra")
-            )
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        InputField("Fecha de Nacimiento", birthDate, {}, Modifier.fillMaxWidth(), isDropdown = true, onClick = onBirthDateClick)
-
-        Spacer(modifier = Modifier.height(24.dp))
-        InputField("Email *", email, onEmailChange, leadingIcon = { Icon(painterResource(R.drawable.boton_notificaciones_expedientes), null, tint = Color.DarkGray, modifier = Modifier.size(20.dp)) })
-        Spacer(modifier = Modifier.height(12.dp))
-        InputField("Teléfono", phone, onPhoneChange, leadingIcon = { Icon(painterResource(R.drawable.boton_usuario_expedientes), null, tint = Color.DarkGray, modifier = Modifier.size(20.dp)) })
-        Spacer(modifier = Modifier.height(12.dp))
-        InputField("Dirección", address, onAddressChange)
-        Spacer(modifier = Modifier.height(12.dp))
-        InputField("Descripción", description, onDescriptionChange, isMultiline = true, modifier = Modifier.fillMaxWidth().height(150.dp))
-
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(onClick = onSaveClick, modifier = Modifier.fillMaxWidth().height(48.dp), colors = ButtonDefaults.buttonColors(containerColor = FigmaGold), shape = RoundedCornerShape(24.dp), enabled = !isLoading) {
-            Text("Guardar Cliente", color = Color.White)
-        }
-        Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(onClick = onDeleteClick, modifier = Modifier.fillMaxWidth().height(48.dp), border = androidx.compose.foundation.BorderStroke(1.dp, FigmaRed), shape = RoundedCornerShape(24.dp)) {
-            Text("Eliminar Cliente", color = FigmaRed)
-        }
-        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 
@@ -287,29 +236,18 @@ private fun InputField(
                 verticalAlignment = if (isMultiline) Alignment.Top else Alignment.CenterVertically
             ) {
                 if (leadingIcon != null) {
-                    Box(modifier = Modifier.padding(top = if (isMultiline) 12.dp else 0.dp)) {
-                        leadingIcon()
-                    }
+                    Box(modifier = Modifier.padding(top = if (isMultiline) 12.dp else 0.dp)) { leadingIcon() }
                     Spacer(Modifier.width(8.dp))
                 }
                 BasicTextField(
                     value = value,
                     onValueChange = onValueChange,
                     readOnly = isDropdown || onClick != null,
-                    enabled = true,
                     textStyle = TextStyle(color = Color.White, fontSize = 15.sp),
                     cursorBrush = SolidColor(Color.White),
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight()
-                        .focusRequester(focusRequester),
+                    modifier = Modifier.weight(1f).fillMaxHeight().focusRequester(focusRequester),
                     decorationBox = { innerTextField ->
-                        Box(
-                            contentAlignment = if (isMultiline) Alignment.TopStart else Alignment.CenterStart,
-                            modifier = Modifier.padding(vertical = if (isMultiline) 12.dp else 0.dp)
-                        ) {
-                            innerTextField()
-                        }
+                        Box(contentAlignment = if (isMultiline) Alignment.TopStart else Alignment.CenterStart) { innerTextField() }
                     }
                 )
                 if (isDropdown) {
@@ -321,21 +259,10 @@ private fun InputField(
                     )
                 }
             }
-
             if (options != null) {
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier.background(FigmaFieldBackground)
-                ) {
+                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }, modifier = Modifier.background(FigmaFieldBackground)) {
                     options.forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option, color = Color.White) },
-                            onClick = {
-                                onValueChange(option)
-                                expanded = false
-                            }
-                        )
+                        DropdownMenuItem(text = { Text(option, color = Color.White) }, onClick = { onValueChange(option); expanded = false })
                     }
                 }
             }

@@ -9,6 +9,7 @@ data class Client(
     val phone: String = "",
     val email: String = "",
     val personType: String = "", // "Física" o "Jurídica"
+    val documentNumber: String = "",
     val address: String = "",
     val description: String = "",
     val createdAt: Long = System.currentTimeMillis()

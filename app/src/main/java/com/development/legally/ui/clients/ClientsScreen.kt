@@ -66,71 +66,16 @@ fun ClientsScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 
                 FilterSectionRow(title = "Filtrar por:") {
-                        // Cliente específico
-                        FilterDropdown(
-                            label = "Cliente",
-                            options = listOf("Todos") + uiState.clients.map { "${it.name} ${it.lastName}" },
-                            onOptionSelected = { selected ->
-                                if (selected == "Todos") {
-                                    viewModel.loadClients()
-                                } else {
-                                    val parts = selected.split(" ")
-                                    val first = parts.firstOrNull() ?: ""
-                                    val last = parts.drop(1).joinToString(" ").ifEmpty { "" }
-                                    viewModel.loadClientsFilteredAndOrdered("clientName", "${first}||${last}", null)
-                                }
-                            }
-                        )
-
-                        // Fecha (createdAt range)
-                        FilterDropdown(
-                            label = "Fecha",
-                            options = listOf("Todos", "Última semana", "Último mes", "Último año"),
-                            onOptionSelected = { selected ->
-                                when (selected) {
-                                    "Todos" -> viewModel.loadClients()
-                                    "Última semana" -> viewModel.loadClientsFilteredAndOrdered("createdAtRange", "last_week", null)
-                                    "Último mes" -> viewModel.loadClientsFilteredAndOrdered("createdAtRange", "last_month", null)
-                                    "Último año" -> viewModel.loadClientsFilteredAndOrdered("createdAtRange", "last_year", null)
-                                    else -> viewModel.loadClients()
-                                }
-                            }
-                        )
-
-                        // Tipo
                         FilterDropdown(
                             label = "Tipo",
                             options = listOf("Todos", "Física", "Jurídica"),
-                            onOptionSelected = { selected ->
-                                if (selected == "Todos") viewModel.loadClients() else viewModel.loadClientsFilteredAndOrdered("personType", selected, null)
-                            }
+                            onOptionSelected = { if (it == "Todos") viewModel.loadClients() else viewModel.updatePersonTypeFilter(it) }
                         )
-                        // Estado (in-memory fallback)
                         FilterDropdown(
                             label = "Estado",
                             options = listOf("Todos", "Activo", "Inactivo"),
-                            onOptionSelected = { selected ->
-                                if (selected == "Todos") viewModel.loadClients() else viewModel.updateStatusFilter(selected)
-                            }
+                            onOptionSelected = { if (it == "Todos") viewModel.loadClients() else viewModel.updateStatusFilter(it) }
                         )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Ordenar por
-                FilterSectionRow(title = "Ordenar por:") {
-                    FilterDropdown(
-                        label = "Ordenar",
-                        options = listOf("Nombre", "Cliente", "Tipo"),
-                        onOptionSelected = { selected ->
-                            when (selected) {
-                                "Nombre" -> viewModel.loadClientsFilteredAndOrdered(null, null, "name")
-                                "Cliente" -> viewModel.loadClientsFilteredAndOrdered(null, null, "lastName")
-                                "Tipo" -> viewModel.loadClientsFilteredAndOrdered(null, null, "personType")
-                                else -> viewModel.loadClients()
-                            }
-                        }
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -141,11 +86,12 @@ fun ClientsScreen(
                     } else {
                         LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             items(uiState.filtered) { client ->
+                                val activeCases = uiState.clientCaseCounts[client.id] ?: 0
                                 MasterClientItem(
                                     name = "${client.name} ${client.lastName}",
-                                    activeCount = "5 expedientes activos",
-                                    summary = "Gestión legal activa",
-                                    status = "Activo",
+                                    activeCount = "$activeCases expedientes activos",
+                                    summary = client.description.ifEmpty { "Sin descripción disponible" },
+                                    status = if (activeCases > 0) "Activo" else "Inactivo",
                                     onClick = { onNavigateToEditClient(client.id) }
                                 )
                             }

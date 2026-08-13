@@ -20,11 +20,15 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.development.legally.R
+import com.development.legally.data.model.NotificationItem
+import com.development.legally.ui.agenda.AgendaViewModel
 
 @Composable
 fun UserAction(
@@ -75,11 +79,17 @@ fun UserAction(
 @Composable
 fun NotificationAction(
     modifier: Modifier = Modifier,
-    notifications: List<String> = listOf("Cita programada a las 10:00 AM", "Nuevo expediente asignado"),
+    agendaViewModel: AgendaViewModel = viewModel(),
+    onNotificationClick: (String) -> Unit = {},
     goldColor: Color = Color(0xFF9E8D44)
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     val density = LocalDensity.current
+    val uiState by agendaViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        agendaViewModel.loadEvents()
+    }
 
     Box(
         modifier = modifier
@@ -104,23 +114,73 @@ fun NotificationAction(
             ) {
                 Card(
                     modifier = Modifier
-                        .width(280.dp)
+                        .width(300.dp)
+                        .heightIn(max = 400.dp)
                         .padding(end = 12.dp)
                         .border(1.dp, goldColor, RoundedCornerShape(8.dp)),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))
                 ) {
-                    LazyColumn(modifier = Modifier.padding(12.dp)) {
-                        item {
-                            Text("Notificaciones", color = goldColor, fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 8.dp))
-                        }
-                        items(notifications) { notification ->
-                            Text(notification, color = Color.White, fontSize = 14.sp, modifier = Modifier.padding(vertical = 4.dp))
-                            HorizontalDivider(color = Color.DarkGray)
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            "Notificaciones de Eventos", 
+                            color = goldColor, 
+                            fontWeight = FontWeight.Bold, 
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                        
+                        if (uiState.notifications.isEmpty()) {
+                            Text(
+                                "No hay notificaciones próximas", 
+                                color = Color.Gray, 
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth(),
+                                textAlign = TextAlign.Center
+                            )
+                        } else {
+                            LazyColumn(modifier = Modifier.weight(1f, fill = false)) {
+                                items(uiState.notifications) { notification ->
+                                    NotificationListItem(notification) {
+                                        isExpanded = false
+                                        onNotificationClick(it)
+                                    }
+                                    HorizontalDivider(color = Color.DarkGray, modifier = Modifier.padding(vertical = 4.dp))
+                                }
+                            }
                         }
                     }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun NotificationListItem(
+    notification: NotificationItem,
+    onClick: (String) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick(notification.eventId) }
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = notification.title,
+            color = Color.White,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(
+            text = notification.message,
+            color = Color.LightGray,
+            fontSize = 13.sp,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -133,13 +193,6 @@ fun MainSearchBar(
 ) {
     var query by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val isKeyboardVisible = WindowInsets.ime.getBottom(LocalDensity.current) > 0
-
-    LaunchedEffect(isKeyboardVisible) {
-        if (!isKeyboardVisible && query.isNotEmpty()) {
-            // query = ""
-        }
-    }
 
     Box(
         modifier = modifier

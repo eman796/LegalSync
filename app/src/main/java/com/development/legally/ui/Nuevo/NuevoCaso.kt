@@ -26,6 +26,7 @@ fun NuevoCasoScreen(
     // Opciones para los desplegables
     val tiposProceso = listOf("Penal", "Civil", "Laboral", "Familia", "Administrativo", "Otro")
     val estadosCaso = listOf("Activo", "En proceso", "Pendiente", "Finalizado", "Archivado")
+    val prioridades = listOf("Baja", "Media", "Alta", "Urgente")
 
     LaunchedEffect(Unit) {
         viewModel.setCaseForEditing("new")
@@ -45,6 +46,7 @@ fun NuevoCasoScreen(
         onCancelConfirm = onBack,
         onSaveClick = { viewModel.guardarCaso() }
     ) {
+        // SECCIÓN: INFORMACIÓN GENERAL
         FormSectionHeader(
             title = "Información General",
             icon = { Icon(painterResource(id = R.drawable.ic_stat_folder), contentDescription = null, tint = Color(0xFF9E8D44)) }
@@ -52,7 +54,7 @@ fun NuevoCasoScreen(
 
         Row(modifier = Modifier.fillMaxWidth()) {
             FormElement(
-                label = "Número de expediente",
+                label = "Número de expediente *",
                 placeholder = "25-00000-033-PE",
                 type = FormDataType.STRING,
                 value = uiState.numeroExpediente,
@@ -96,6 +98,18 @@ fun NuevoCasoScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Agregada Prioridad en Nuevo Caso
+        FormElement(
+            label = "Prioridad del caso",
+            placeholder = "Seleccionar prioridad...",
+            type = FormDataType.LIST,
+            value = uiState.prioridad,
+            options = prioridades,
+            onValueChange = { viewModel.onPrioridadChange(it) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         FormElement(
             label = "Descripción del caso",
             placeholder = "Ingrese descripción...",
@@ -106,6 +120,7 @@ fun NuevoCasoScreen(
             maxChars = 1000
         )
 
+        // SECCIÓN: CLIENTE
         FormSectionHeader(
             title = "Cliente",
             icon = { Icon(painterResource(id = R.drawable.ic_nav_clientes_off), contentDescription = null, tint = Color.White) }

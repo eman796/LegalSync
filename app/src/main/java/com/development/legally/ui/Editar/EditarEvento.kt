@@ -24,7 +24,6 @@ fun EditarEventoScreen(
     val tiposOptions = listOf("Audiencia", "Cita", "Reunión", "Juicio", "Visita", "Otro")
     val estadosOptions = listOf("Disponible", "Ocupado", "Pendiente", "Completado")
     val duracionesOptions = listOf("15 min", "30 min", "1 hora", "2 horas", "Todo el día")
-    val lugaresOptions = listOf("Oficina Principal", "Juzgado", "Virtual", "Otro")
     val repetirOptions = listOf("Nunca", "Diariamente", "Semanalmente", "Mensualmente")
     val recordarOptions = listOf("Sin aviso", "5 min antes", "15 min antes", "30 min antes", "1 hora antes")
 
@@ -46,6 +45,7 @@ fun EditarEventoScreen(
         onAtras = onBack,
         onCancelar = onBack,
         onGuardar = { viewModel.guardarEvento() },
+        onDuplicar = { viewModel.duplicarEvento() }, // Implementado duplicar
         onEliminar = { viewModel.eliminarEvento() }
     ) {
         EdicionSuprema.TituloSeccion(

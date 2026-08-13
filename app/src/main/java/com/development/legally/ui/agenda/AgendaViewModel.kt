@@ -1,13 +1,16 @@
 package com.development.legally.ui.agenda
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.development.legally.data.model.Case
 import com.development.legally.data.model.Client
 import com.development.legally.data.model.Event
+import com.development.legally.data.model.NotificationItem
 import com.development.legally.data.repository.CaseRepository
 import com.development.legally.data.repository.ClientRepository
 import com.development.legally.data.repository.EventRepository
+import com.development.legally.core.notifications.NotificationHelper
 import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,6 +23,7 @@ import java.util.*
 data class AgendaUiState(
     val events: List<Event> = emptyList(),
     val filteredEvents: List<Event> = emptyList(),
+    val notifications: List<NotificationItem> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
     val searchQuery: String = "",
@@ -45,11 +49,11 @@ data class AgendaUiState(
     val isSaved: Boolean = false
 )
 
-class AgendaViewModel(
-    private val repository: EventRepository = EventRepository(),
-    private val caseRepository: CaseRepository = CaseRepository(),
-    private val clientRepository: ClientRepository = ClientRepository()
-) : ViewModel() {
+class AgendaViewModel(application: Application) : AndroidViewModel(application) {
+    private val repository = EventRepository()
+    private val caseRepository = CaseRepository()
+    private val clientRepository = ClientRepository()
+    
     private val _uiState = MutableStateFlow(AgendaUiState())
     val uiState: StateFlow<AgendaUiState> = _uiState.asStateFlow()
 
@@ -60,12 +64,32 @@ class AgendaViewModel(
         viewModelScope.launch {
             val result = repository.getEvents()
             val list = result.getOrDefault(emptyList())
-            _uiState.update { it.copy(
-                events = list,
-                isLoading = false,
-                filteredEvents = applyFilterLogic(list, it.searchQuery, it.filterType)
-            ) }
+            _uiState.update { state ->
+                state.copy(
+                    events = list,
+                    isLoading = false,
+                    filteredEvents = applyFilterLogic(list, state.searchQuery, state.filterType, state.filterDay),
+                    notifications = generateNotifications(list)
+                )
+            }
         }
+    }
+
+    private fun generateNotifications(events: List<Event>): List<NotificationItem> {
+        val now = System.currentTimeMillis()
+        return events.filter { it.fechaHora != null }
+            .filter { it.recordar != "Sin aviso" }
+            .map { event ->
+                val timeStr = event.fechaHora?.let { fullDateFormatter.format(it.toDate()) } ?: ""
+                NotificationItem(
+                    id = event.eventId,
+                    title = "Recordatorio: ${event.titulo}",
+                    message = "${event.tipo} programada para las $timeStr",
+                    eventId = event.eventId,
+                    timestamp = event.fechaHora?.toDate()?.time ?: 0L
+                )
+            }
+            .sortedBy { it.timestamp }
     }
 
     fun loadDropdownData() {
@@ -77,7 +101,6 @@ class AgendaViewModel(
     }
 
     fun setEventForEditing(eventId: String?) {
-        // Fix: Reset state to force fresh load and clear previous success flags
         _uiState.update { currentState ->
             AgendaUiState(
                 isLoading = true,
@@ -90,6 +113,7 @@ class AgendaViewModel(
         loadDropdownData()
         
         if (eventId == null || eventId == "new") {
+            resetForm()
             _uiState.update { it.copy(isLoading = false) }
             return
         }
@@ -113,6 +137,14 @@ class AgendaViewModel(
                 ) }
             } ?: _uiState.update { it.copy(isLoading = false, error = "Evento no encontrado") }
         }
+    }
+
+    private fun resetForm() {
+        _uiState.update { it.copy(
+            titulo = "", tipo = "Audiencia", estado = "Disponible",
+            fechaHora = "", duracion = "", lugar = "", descripcion = "",
+            casoRelacionado = "", participante = "", repetir = "Nunca", recordar = "Sin aviso"
+        ) }
     }
 
     fun guardarEvento() {
@@ -145,7 +177,46 @@ class AgendaViewModel(
         )
 
         viewModelScope.launch {
-            val res = if (!state.currentEventId.isNullOrEmpty()) repository.updateEvent(event) else repository.createEvent(event)
+            val res = if (state.currentEventId == null) repository.createEvent(event) else repository.updateEvent(event)
+            if (res.isSuccess) {
+                if (event.recordar != "Sin aviso") {
+                    NotificationHelper.scheduleEventNotification(getApplication(), event)
+                }
+                loadEvents()
+                _uiState.update { it.copy(isSaving = false, isSaved = true) }
+            } else {
+                _uiState.update { it.copy(isSaving = false, error = res.exceptionOrNull()?.message) }
+            }
+        }
+    }
+
+    fun duplicarEvento() {
+        val state = _uiState.value
+        _uiState.update { it.copy(isSaving = true) }
+        
+        val timestamp = try {
+            val date = fullDateFormatter.parse(state.fechaHora)
+            Timestamp(date ?: Date())
+        } catch (e: Exception) { 
+            Timestamp.now() 
+        }
+
+        val event = Event(
+            titulo = "${state.titulo} (Copia)",
+            tipo = state.tipo,
+            estado = state.estado,
+            fechaHora = timestamp,
+            duracion = state.duracion,
+            lugar = state.lugar,
+            descripcion = state.descripcion,
+            casoRelacionado = state.casoRelacionado,
+            participante = state.participante,
+            repetir = state.repetir,
+            recordar = state.recordar
+        )
+
+        viewModelScope.launch {
+            val res = repository.createEvent(event)
             if (res.isSuccess) {
                 loadEvents()
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
@@ -191,31 +262,77 @@ class AgendaViewModel(
     fun onParticipanteChange(v: String) { _uiState.update { it.copy(participante = v) } }
     fun onRepetirChange(v: String) { _uiState.update { it.copy(repetir = v) } }
     fun onRecordarChange(v: String) { _uiState.update { it.copy(recordar = v) } }
-    fun resetSaveState() { _uiState.update { it.copy(isSaved = false) } }
+    
+    fun resetSaveState() { _uiState.update { it.copy(isSaved = false, isSaving = false) } }
     
     fun updateSearchQuery(q: String) {
-        _uiState.update { it.copy(searchQuery = q, filteredEvents = applyFilterLogic(it.events, q, it.filterType)) }
+        _uiState.update { it.copy(searchQuery = q) }
+        _uiState.update { it.copy(filteredEvents = applyFilterLogic(it.events, q, it.filterType, it.filterDay)) }
     }
 
     fun updateTypeFilter(t: String) {
-        _uiState.update { it.copy(filterType = t, filteredEvents = applyFilterLogic(it.events, it.searchQuery, t)) }
+        _uiState.update { it.copy(filterType = t) }
+        _uiState.update { it.copy(filteredEvents = applyFilterLogic(it.events, it.searchQuery, t, it.filterDay)) }
     }
 
-    private fun applyFilterLogic(events: List<Event>, query: String, type: String): List<Event> {
+    fun updateDayFilter(d: String) {
+        _uiState.update { it.copy(filterDay = d) }
+        _uiState.update { it.copy(filteredEvents = applyFilterLogic(it.events, it.searchQuery, it.filterType, d)) }
+    }
+
+    private fun applyFilterLogic(events: List<Event>, query: String, type: String, day: String): List<Event> {
         val q = query.lowercase()
-        return events.filter { 
-            (it.titulo.lowercase().contains(q) || it.descripcion.lowercase().contains(q) || it.casoRelacionado.lowercase().contains(q)) &&
-            (if (type == "Todos") true else it.tipo == type)
+        
+        val todayStart = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        
+        val tomorrowStart = todayStart + (24 * 60 * 60 * 1000)
+        val dayAfterTomorrowStart = tomorrowStart + (24 * 60 * 60 * 1000)
+        
+        val weekStart = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        val weekEnd = weekStart + (7 * 24 * 60 * 60 * 1000)
+
+        val monthStart = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
+        val monthEnd = Calendar.getInstance().apply {
+            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
+            set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
+        }.timeInMillis
+
+        return events.filter { event ->
+            val matchesQuery = (event.titulo.lowercase().contains(q) || event.descripcion.lowercase().contains(q) || (event.casoRelacionado ?: "").lowercase().contains(q))
+            val matchesType = (if (type == "Todos") true else event.tipo == type)
+            
+            val matchesDay = if (event.fechaHora != null) {
+                val eventTime = event.fechaHora!!.toDate().time
+                when (day) {
+                    "Hoy" -> eventTime in todayStart until tomorrowStart
+                    "Mañana" -> eventTime in tomorrowStart until dayAfterTomorrowStart
+                    "Esta semana" -> eventTime in weekStart until weekEnd
+                    "Mes" -> eventTime in monthStart until monthEnd
+                    else -> true
+                }
+            } else true
+
+            matchesQuery && matchesType && matchesDay
         }
     }
 
-    fun updateDayFilter(d: String) { _uiState.update { it.copy(filterDay = d) } }
-    
     fun eliminarEvento() { 
         viewModelScope.launch {
-            _uiState.value.currentEventId?.let { repository.deleteEvent(it) }
-            loadEvents()
-            _uiState.update { it.copy(isSaved = true) }
+            val eventId = _uiState.value.currentEventId
+            if (eventId != null) {
+                repository.deleteEvent(eventId)
+                NotificationHelper.cancelNotification(getApplication(), eventId)
+                loadEvents()
+                _uiState.update { it.copy(isSaved = true) }
+            }
         }
     }
 }

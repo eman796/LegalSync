@@ -16,23 +16,23 @@ fun EditarCasoScreen(
     onBack: () -> Unit,
     onSave: () -> Unit,
     onDelete: () -> Unit,
-    onDuplicate: () -> Unit,
+    onDuplicate: (String) -> Unit,
     viewModel: CasosViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Opciones para los desplegables
     val tiposProceso = listOf("Penal", "Civil", "Laboral", "Familia", "Administrativo", "Otro")
     val estadosCaso = listOf("Activo", "En proceso", "Pendiente", "Finalizado", "Archivado")
+    val prioridades = listOf("Baja", "Media", "Alta", "Urgente")
 
-    // Cargar datos del caso y clientes al entrar
     LaunchedEffect(caseId) {
         viewModel.setCaseForEditing(caseId)
     }
 
-    // Navegar atrás al guardar con éxito
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
+            // Si acabamos de duplicar, podríamos querer navegar al nuevo, 
+            // pero por ahora volvemos o dejamos que el callback decida.
             onSave()
             viewModel.resetSaveState()
         }
@@ -45,7 +45,7 @@ fun EditarCasoScreen(
         onAtras = onBack,
         onCancelar = onBack,
         onGuardar = { viewModel.guardarCaso() },
-        onDuplicar = onDuplicate,
+        onDuplicar = { viewModel.duplicarCaso() },
         onEliminar = { viewModel.eliminarCaso() }
     ) {
         EdicionSuprema.TituloSeccion(
@@ -97,6 +97,18 @@ fun EditarCasoScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Corregido: onValorChange en lugar de onValueChange
+        EdicionSuprema.ElementoEdicion(
+            titulo = "Prioridad del caso",
+            placeholder = "Seleccionar prioridad...",
+            tipo = EdicionSuprema.TipoDato.LISTA,
+            valor = uiState.prioridad,
+            options = prioridades,
+            onValorChange = { viewModel.onPrioridadChange(it) }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         EdicionSuprema.ElementoEdicion(
             titulo = "Descripción del caso",
             placeholder = "Ingrese descripción...",
@@ -113,7 +125,6 @@ fun EditarCasoScreen(
             logo = R.drawable.ic_nav_clientes_off
         )
 
-        // Selector de cliente unificado
         EdicionSuprema.ElementoEdicion(
             titulo = "Seleccionar Cliente",
             placeholder = "Haga clic para seleccionar...",
