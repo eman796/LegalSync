@@ -32,7 +32,7 @@ import java.util.*
 private val FigmaTextWhite = Color(0xFFFFFFFF)
 private val FigmaFieldBackground = Color(0xFF171E27)
 
-enum class FormDataType { STRING, INTEGER, LIST, DATETIME }
+enum class FormDataType { STRING, INTEGER, LIST, DATETIME, DATE }
 
 @Composable
 fun BaseFormScreen(
@@ -161,12 +161,18 @@ fun FormElement(
             confirmButton = {
                 TextButton(onClick = {
                     datePickerState.selectedDateMillis?.let { millis ->
-                        tempDate = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
-                        showDatePicker = false
-                        showTimePicker = true // Al aceptar fecha, abrimos reloj
+                        val formatted = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
+                        if (type == FormDataType.DATE) {
+                            onValueChange(formatted)
+                            showDatePicker = false
+                        } else {
+                            tempDate = formatted
+                            showDatePicker = false
+                            showTimePicker = true // Al aceptar fecha, abrimos reloj si es DATETIME
+                        }
                     }
                 }) {
-                    Text("SIGUIENTE", color = FigmaGold)
+                    Text(if (type == FormDataType.DATE) "ACEPTAR" else "SIGUIENTE", color = FigmaGold)
                 }
             },
             dismissButton = {
@@ -226,13 +232,13 @@ fun FormElement(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (type == FormDataType.LIST || type == FormDataType.DATETIME) {
+        if (type == FormDataType.LIST || type == FormDataType.DATETIME || type == FormDataType.DATE) {
             Box(
                 modifier = Modifier.fillMaxWidth().height(height)
                     .background(FigmaFieldBackground, RoundedCornerShape(12.dp))
                     .border(1.dp, Color.White.copy(alpha = 0.1f), RoundedCornerShape(12.dp))
                     .clickable { 
-                        if (type == FormDataType.DATETIME) {
+                        if (type == FormDataType.DATETIME || type == FormDataType.DATE) {
                             showDatePicker = true
                         } else if (options != null) {
                             expanded = true
@@ -257,7 +263,7 @@ fun FormElement(
                         )
                     }
                     
-                    val iconRes = if (type == FormDataType.DATETIME) R.drawable.ic_card_clock_figma else R.drawable.ic_arrow_right_gold
+                    val iconRes = if (type == FormDataType.DATETIME || type == FormDataType.DATE) R.drawable.ic_card_clock_figma else R.drawable.ic_arrow_right_gold
                     Icon(
                         painter = painterResource(id = iconRes), 
                         contentDescription = null, 

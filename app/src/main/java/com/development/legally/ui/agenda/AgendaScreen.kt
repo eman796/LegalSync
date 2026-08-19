@@ -84,7 +84,8 @@ fun AgendaContent(
                 ) {
                     UserAction(onLogoutConfirm = onLogout)
                     SectionHeader(title = "Agenda", modifier = Modifier.weight(1f))
-                    NotificationAction()
+                    // Fix 4: Campanita conectada a eventos reales
+                    NotificationAction(onNotificationClick = onNavigateToEditEvent)
                 }
             },
             bottomBar = {
@@ -93,7 +94,7 @@ fun AgendaContent(
                     onInicioClick = onNavigateToHome,
                     onExpedientesClick = onNavigateToCases,
                     onCrearClick = { showNewMenu = true },
-                    onAgendaClick = { },
+                    onAgendaClick = { viewModel.loadEvents() }, // Fix 3: Recarga al pulsar icono
                     onClientesClick = onNavigateToClients
                 )
             },
@@ -117,7 +118,7 @@ fun AgendaContent(
                 FilterSectionRow(title = "Filtrar por:") {
                     FilterDropdown(
                         label = "Día",
-                        options = listOf("Hoy", "Mañana", "Esta semana", "Mes"),
+                        options = listOf("Hoy", "Mañana", "Esta semana", "Mes", "Todos"),
                         onOptionSelected = onDayFilterSelected
                     )
                     FilterDropdown(
@@ -192,7 +193,7 @@ fun AgendaList(
                     time = event.estado.ifEmpty { "Sin Estado" },
                     title = viewModel.formatEventTimeRange(event),
                     caseNumber = "${event.titulo} (${event.casoRelacionado})",
-                    // Fix 2: Bolita de estado basada en event.estado
+                    // Fix 2: Bolita de estado basada en event.estado real
                     statusColor = when(event.estado) {
                         "Disponible" -> Color(0xFF81C784) // Verde
                         "Ocupado" -> Color(0xFFE57373)    // Rojo

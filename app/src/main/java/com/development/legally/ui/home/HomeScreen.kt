@@ -29,6 +29,8 @@ import com.development.legally.ui.Nuevo.NewOverlay
 import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import com.development.legally.ui.ClasesSupremas.*
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.development.legally.ui.agenda.AgendaViewModel
 
 @Composable
 fun HomeScreen(
@@ -42,9 +44,14 @@ fun HomeScreen(
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditClient: (String) -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
-    onNavigateToEditEvent: (String) -> Unit = {}
+    onNavigateToEditEvent: (String) -> Unit = {},
+    agendaViewModel: AgendaViewModel = viewModel()
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
+    
+    // Al pulsar de nuevo el icono de Inicio, recargamos (aunque no tiene boton especifico de refresco en LegallyBottomNavigationBar,
+    // se puede implementar si se desea el mismo comportamiento que Clientes/Agenda)
+
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             topBar = { 
@@ -58,13 +65,14 @@ fun HomeScreen(
                 ) {
                     UserAction(onLogoutConfirm = onLogout)
                     SectionHeader(title = "Inicio", modifier = Modifier.weight(1f))
-                    NotificationAction()
+                    // Fix 4: Notificaciones reales en Inicio
+                    NotificationAction(onNotificationClick = onNavigateToEditEvent)
                 }
             },
             bottomBar = { 
                 LegallyBottomNavigationBar(
                     currentRoute = "home",
-                    onInicioClick = { },
+                    onInicioClick = { /* Podría recargar si se desea */ },
                     onExpedientesClick = onNavigateToCases,
                     onCrearClick = { showNewMenu = true },
                     onAgendaClick = onNavigateToAgenda,
@@ -290,13 +298,5 @@ fun PendingTaskItem(title: String, onClick: () -> Unit) {
             Spacer(modifier = Modifier.width(8.dp))
             Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(20.dp))
         }
-    }
-}
-
-@Preview(showBackground = true, widthDp = 389, heightDp = 879)
-@Composable
-fun HomeScreenPreview() {
-    LegallyTheme {
-        HomeScreen()
     }
 }

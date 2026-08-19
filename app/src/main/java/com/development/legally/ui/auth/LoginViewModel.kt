@@ -22,7 +22,6 @@ class LoginViewModel : ViewModel() {
     val loginState: StateFlow<LoginState> = _loginState
 
     fun login(email: String, password: String) {
-        // Validaciones básicas
         if (email.isBlank() || password.isBlank()) {
             _loginState.value = LoginState.Error("Por favor complete todos los campos")
             return
@@ -32,8 +31,6 @@ class LoginViewModel : ViewModel() {
             _loginState.value = LoginState.Error("Ingrese un correo válido")
             return
         }
-
-        // Llamada a Firebase
         viewModelScope.launch {
             _loginState.value = LoginState.Loading
             android.util.Log.d("LoginDebug", "Intentando login con: $email")

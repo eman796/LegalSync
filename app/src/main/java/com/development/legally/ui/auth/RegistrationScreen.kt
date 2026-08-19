@@ -70,7 +70,6 @@ fun RegistrationScreen(
         ) {
             Spacer(modifier = Modifier.height(topSpacerHeight))
 
-            // Título de la pantalla con OutlinedText (Figma Style)
             OutlinedText(
                 text = "SOLICITAR REGISTRO",
                 mainColor = Color.White,
@@ -82,7 +81,6 @@ fun RegistrationScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Campo Nombre Completo
             Column {
                 OutlinedText(
                     text = "Nombre completo",
@@ -112,7 +110,6 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Campo Correo Electrónico (Indispensable para Firebase)
             Column {
                 OutlinedText(
                     text = "Correo electrónico",
@@ -193,7 +190,6 @@ fun RegistrationScreen(
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // Botón de Solicitar Registro
             val isLoading = registrationState is RegistrationViewModel.RegistrationState.Loading
             Button(
                 onClick = { if (!isLoading) registrationViewModel.requestRegistration(fullName, email, password) },
@@ -219,8 +215,6 @@ fun RegistrationScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
         }
-
-        // EL BOTÓN VOLVER AL FINAL PARA QUE ESTÉ ENCIMA Y RECIBA CLICS
         BackButton(onClick = onBackClick)
     }
 

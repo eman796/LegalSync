@@ -59,7 +59,10 @@ class CasosViewModel : ViewModel() {
                     )
                 }
             } else {
-                _uiState.update { it.copy(error = res.exceptionOrNull()?.message, loading = false) }
+                _uiState.update { it.copy(
+                    error = res.exceptionOrNull()?.message,
+                    loading = false
+                ) }
             }
         }
     }
@@ -132,6 +135,7 @@ class CasosViewModel : ViewModel() {
         
         val caseToSave = Case(
             firestoreDocId = state.currentCaseId ?: "",
+            id = state.currentCaseId ?: "",
             caseNumber = state.numeroExpediente,
             CaseTittle = state.tituloCaso,
             processType = state.tipoProceso,
@@ -144,12 +148,15 @@ class CasosViewModel : ViewModel() {
         )
 
         viewModelScope.launch {
-            val res = if (state.currentCaseId == null) repository.createCase(caseToSave.copy(createdAt = Timestamp.now()))
-                      else repository.updateCase(caseToSave)
+            val res = if (state.currentCaseId == null) {
+                repository.createCase(caseToSave.copy(createdAt = Timestamp.now()))
+            } else {
+                repository.updateCase(caseToSave)
+            }
             
             if (res.isSuccess) {
-                loadCasos()
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
+                loadCasos()
             } else {
                 _uiState.update { it.copy(isSaving = false, error = res.exceptionOrNull()?.message) }
             }
@@ -176,8 +183,8 @@ class CasosViewModel : ViewModel() {
         viewModelScope.launch {
             val res = repository.createCase(caseToDuplicate)
             if (res.isSuccess) {
-                loadCasos()
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
+                loadCasos()
             } else {
                 _uiState.update { it.copy(isSaving = false, error = res.exceptionOrNull()?.message) }
             }
@@ -187,29 +194,49 @@ class CasosViewModel : ViewModel() {
     fun eliminarCaso() {
         val caseId = _uiState.value.currentCaseId ?: return
         viewModelScope.launch {
-            if (repository.deleteCase(caseId).isSuccess) {
-                loadCasos()
+            val res = repository.deleteCase(caseId)
+            if (res.isSuccess) {
                 _uiState.update { it.copy(isSaved = true) }
+                loadCasos()
             }
         }
     }
 
     fun updateSearchQuery(query: String) {
-        _uiState.update { it.copy(searchQuery = query, filtered = applyFilterLogic(it.cases, query, it.filterStatus, it.filterPriority)) }
+        _uiState.update { state ->
+            state.copy(
+                searchQuery = query,
+                filtered = applyFilterLogic(state.cases, query, state.filterStatus, state.filterPriority)
+            )
+        }
     }
 
     fun updateStatusFilter(status: String) {
-        _uiState.update { it.copy(filterStatus = status, filtered = applyFilterLogic(it.cases, it.searchQuery, status, it.filterPriority)) }
+        _uiState.update { state ->
+            state.copy(
+                filterStatus = status,
+                filtered = applyFilterLogic(state.cases, state.searchQuery, status, state.filterPriority)
+            )
+        }
     }
 
     fun updatePriorityFilter(priority: String) {
-        _uiState.update { it.copy(filterPriority = priority, filtered = applyFilterLogic(it.cases, it.searchQuery, it.filterStatus, priority)) }
+        _uiState.update { state ->
+            state.copy(
+                filterPriority = priority,
+                filtered = applyFilterLogic(state.cases, state.searchQuery, state.filterStatus, priority)
+            )
+        }
     }
 
     private fun applyFilterLogic(cases: List<Case>, query: String, status: String, priority: String): List<Case> {
         val q = query.lowercase()
         return cases.filter { c ->
-            val matchesQuery = c.caseNumber.lowercase().contains(q) || c.description.lowercase().contains(q) || c.clientName.lowercase().contains(q)
+            val matchesQuery = if (q.isBlank()) true else {
+                c.caseNumber.lowercase().contains(q) ||
+                        c.description.lowercase().contains(q) ||
+                        c.clientName.lowercase().contains(q)
+            }
             val matchesStatus = if (status == "Todos") true else c.status == status
             val matchesPriority = if (priority == "Todas") true else c.priority == priority
             matchesQuery && matchesStatus && matchesPriority

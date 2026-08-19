@@ -1,16 +1,7 @@
 package com.development.legally.ui.cases
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
@@ -25,6 +16,8 @@ import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import com.development.legally.ui.ClasesSupremas.*
 import com.development.legally.ui.Nuevo.NewOverlay
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun CasesScreen(
@@ -36,12 +29,14 @@ fun CasesScreen(
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
-    viewModel: CasosViewModel = viewModel() // Instanciación del ViewModel según las instrucciones
+    viewModel: CasosViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    
     LaunchedEffect(Unit) {
         viewModel.loadCasos()
     }
+    
     CasesContent(
         uiState = uiState,
         viewModel = viewModel,
@@ -71,7 +66,7 @@ fun CasesContent(
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize()) {//Titulo, parte de arrriba
+    Box(modifier = Modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
                 Row(
@@ -84,14 +79,14 @@ fun CasesContent(
                 ) {
                     UserAction(onLogoutConfirm = onLogout)
                     SectionHeader(title = "Expedientes", modifier = Modifier.weight(1f))
-                    NotificationAction()
+                    NotificationAction(onNotificationClick = { /* Navegar a evento */ })
                 }
             },
-            bottomBar = {//Barra inferior, navega a otros menus
+            bottomBar = {
                 LegallyBottomNavigationBar(
                     currentRoute = "cases",
                     onInicioClick = onNavigateToHome,
-                    onExpedientesClick = { },
+                    onExpedientesClick = { viewModel?.loadCasos() }, 
                     onCrearClick = { showNewMenu = true },
                     onAgendaClick = onNavigateToAgenda,
                     onClientesClick = onNavigateToClients
@@ -113,11 +108,11 @@ fun CasesContent(
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
-//Seccion de filtros
+
                 FilterSectionRow(title = "Filtrar por:") {
                     FilterDropdown(
                         label = "Estado",
-                        options = listOf("Todos", "En proceso", "Pendiente", "Finalizado", "Archivado"),
+                        options = listOf("Todos", "Activo", "En proceso", "Pendiente", "Finalizado", "Archivado"),
                         onOptionSelected = { viewModel?.updateStatusFilter(it) }
                     )
                     FilterDropdown(
@@ -128,17 +123,17 @@ fun CasesContent(
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
-//Ya expedientes como tal
+
                 Box(modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
                     .background(FigmaBackground)) {
-                    if (uiState.loading) {//Bola de Cargando
+                    if (uiState.loading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
                             color = FigmaGold
                         )
-                    } else if (uiState.error != null) {//Si hay error
+                    } else if (uiState.error != null) {
                         Text(
                             text = uiState.error ?: "Error al cargar expedientes",
                             color = Color.Red,
@@ -154,8 +149,10 @@ fun CasesContent(
                                     caseTitle = case.caseNumber,
                                     description = case.description,
                                     status = case.status.uppercase(),
-                                    updateDate = "${case.updatedAt?.toDate()}",
-                                    onClick = { onNavigateToEditCase(case.id) }
+                                    updateDate = if (case.updatedAt != null) 
+                                        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(case.updatedAt.toDate()) 
+                                        else "Reciente",
+                                    onClick = { onNavigateToEditCase(case.firestoreDocId) }
                                 )
                             }
                         }

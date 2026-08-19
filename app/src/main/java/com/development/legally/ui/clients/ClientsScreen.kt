@@ -31,6 +31,10 @@ fun ClientsScreen(
     val uiState by viewModel.uiState.collectAsState()
     var showNewMenu by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.loadClients()
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
             topBar = {
@@ -54,7 +58,7 @@ fun ClientsScreen(
                     onExpedientesClick = onNavigateToCases,
                     onCrearClick = { showNewMenu = true },
                     onAgendaClick = onNavigateToAgenda,
-                    onClientesClick = {}
+                    onClientesClick = { viewModel.loadClients() } // Fix 3: Refresco al pulsar icono (TikTok style)
                 )
             },
             containerColor = FigmaBackground
@@ -89,7 +93,7 @@ fun ClientsScreen(
                                 val activeCases = uiState.clientCaseCounts[client.id] ?: 0
                                 MasterClientItem(
                                     name = "${client.name} ${client.lastName}",
-                                    activeCount = "$activeCases expedientes activos",
+                                    activeCount = "$activeCases expedientes activos", // Fix 2: Conteo real
                                     summary = client.description.ifEmpty { "Sin descripción disponible" },
                                     status = if (activeCases > 0) "Activo" else "Inactivo",
                                     onClick = { onNavigateToEditClient(client.id) }

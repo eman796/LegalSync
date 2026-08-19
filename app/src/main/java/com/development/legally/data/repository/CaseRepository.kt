@@ -48,13 +48,13 @@ class CaseRepository {
         }
     }
 
-    suspend fun createCase(case: Case): Result<Unit> {
+    suspend fun createCase(case: Case): Result<String> {
         return try {
             val docRef = casesCollection.document()
             // Asignamos el ID generado tanto al campo interno como al objeto
-            val caseWithId = case.copy(id = docRef.id)
+            val caseWithId = case.copy(id = docRef.id, firestoreDocId = docRef.id)
             docRef.set(caseWithId).await()
-            Result.success(Unit)
+            Result.success(docRef.id)
         } catch (e: Exception) {
             Result.failure(e)
         }

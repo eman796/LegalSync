@@ -27,7 +27,7 @@ data class AgendaUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val searchQuery: String = "",
-    val filterDay: String = "Esta semana",
+    val filterDay: String = "Todos",
     val filterType: String = "Todos",
     
     val availableCases: List<Case> = emptyList(),
@@ -38,7 +38,7 @@ data class AgendaUiState(
     val tipo: String = "Audiencia",
     val estado: String = "Disponible",
     val fechaHora: String = "",
-    val duracion: String = "",
+    val duracion: String = "1 hora",
     val lugar: String = "",
     val descripcion: String = "",
     val casoRelacionado: String = "",
@@ -77,19 +77,18 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
 
     private fun generateNotifications(events: List<Event>): List<NotificationItem> {
         val now = System.currentTimeMillis()
-        return events.filter { it.fechaHora != null }
-            .filter { it.recordar != "Sin aviso" }
+        return events.filter { it.fechaHora != null && it.recordar != "Sin aviso" }
             .map { event ->
-                val timeStr = event.fechaHora?.let { fullDateFormatter.format(it.toDate()) } ?: ""
+                val date = event.fechaHora!!.toDate()
                 NotificationItem(
                     id = event.eventId,
-                    title = "Recordatorio: ${event.titulo}",
-                    message = "${event.tipo} programada para las $timeStr",
+                    title = "Aviso: ${event.titulo}",
+                    message = "${event.tipo} programada para las ${SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)}",
                     eventId = event.eventId,
-                    timestamp = event.fechaHora?.toDate()?.time ?: 0L
+                    timestamp = date.time
                 )
             }
-            .sortedBy { it.timestamp }
+            .sortedByDescending { it.timestamp }
     }
 
     fun loadDropdownData() {
@@ -126,7 +125,7 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
                     tipo = event.tipo.ifEmpty { "Audiencia" },
                     estado = event.estado.ifEmpty { "Disponible" },
                     fechaHora = event.fechaHora?.let { fullDateFormatter.format(it.toDate()) } ?: "",
-                    duracion = event.duracion,
+                    duracion = event.duracion.ifEmpty { "1 hora" },
                     lugar = event.lugar,
                     descripcion = event.descripcion,
                     casoRelacionado = event.casoRelacionado,
@@ -142,7 +141,7 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
     private fun resetForm() {
         _uiState.update { it.copy(
             titulo = "", tipo = "Audiencia", estado = "Disponible",
-            fechaHora = "", duracion = "", lugar = "", descripcion = "",
+            fechaHora = "", duracion = "1 hora", lugar = "", descripcion = "",
             casoRelacionado = "", participante = "", repetir = "Nunca", recordar = "Sin aviso"
         ) }
     }
@@ -162,7 +161,6 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
 
         val event = Event(
             eventId = state.currentEventId ?: "",
-            id = state.currentEventId ?: "",
             titulo = state.titulo,
             tipo = state.tipo,
             estado = state.estado,
@@ -197,9 +195,7 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
         val timestamp = try {
             val date = fullDateFormatter.parse(state.fechaHora)
             Timestamp(date ?: Date())
-        } catch (e: Exception) { 
-            Timestamp.now() 
-        }
+        } catch (e: Exception) { Timestamp.now() }
 
         val event = Event(
             titulo = "${state.titulo} (Copia)",
@@ -216,12 +212,9 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
         )
 
         viewModelScope.launch {
-            val res = repository.createEvent(event)
-            if (res.isSuccess) {
+            if (repository.createEvent(event).isSuccess) {
                 loadEvents()
                 _uiState.update { it.copy(isSaving = false, isSaved = true) }
-            } else {
-                _uiState.update { it.copy(isSaving = false, error = res.exceptionOrNull()?.message) }
             }
         }
     }
@@ -283,33 +276,29 @@ class AgendaViewModel(application: Application) : AndroidViewModel(application) 
     private fun applyFilterLogic(events: List<Event>, query: String, type: String, day: String): List<Event> {
         val q = query.lowercase()
         
-        val todayStart = Calendar.getInstance().apply {
+        val todayCal = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
+        }
+        val todayStart = todayCal.timeInMillis
         
-        val tomorrowStart = todayStart + (24 * 60 * 60 * 1000)
-        val dayAfterTomorrowStart = tomorrowStart + (24 * 60 * 60 * 1000)
+        val tomorrowCal = (todayCal.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }
+        val tomorrowStart = tomorrowCal.timeInMillis
         
-        val weekStart = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_WEEK, firstDayOfWeek)
-            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
+        val dayAfterTomorrowStart = (tomorrowCal.clone() as Calendar).apply { add(Calendar.DAY_OF_YEAR, 1) }.timeInMillis
+        
+        val weekCal = (todayCal.clone() as Calendar).apply { set(Calendar.DAY_OF_WEEK, firstDayOfWeek) }
+        val weekStart = weekCal.timeInMillis
         val weekEnd = weekStart + (7 * 24 * 60 * 60 * 1000)
 
-        val monthStart = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_MONTH, 1)
-            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0); set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
-        }.timeInMillis
-        val monthEnd = Calendar.getInstance().apply {
-            set(Calendar.DAY_OF_MONTH, getActualMaximum(Calendar.DAY_OF_MONTH))
-            set(Calendar.HOUR_OF_DAY, 23); set(Calendar.MINUTE, 59); set(Calendar.SECOND, 59); set(Calendar.MILLISECOND, 999)
-        }.timeInMillis
+        val monthCal = (todayCal.clone() as Calendar).apply { set(Calendar.DAY_OF_MONTH, 1) }
+        val monthStart = monthCal.timeInMillis
+        val monthEnd = (monthCal.clone() as Calendar).apply { add(Calendar.MONTH, 1) }.timeInMillis
 
         return events.filter { event ->
             val matchesQuery = (event.titulo.lowercase().contains(q) || event.descripcion.lowercase().contains(q) || (event.casoRelacionado ?: "").lowercase().contains(q))
             val matchesType = (if (type == "Todos") true else event.tipo == type)
             
-            val matchesDay = if (event.fechaHora != null) {
+            val matchesDay = if (event.fechaHora != null && day != "Todos") {
                 val eventTime = event.fechaHora!!.toDate().time
                 when (day) {
                     "Hoy" -> eventTime in todayStart until tomorrowStart

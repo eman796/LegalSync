@@ -63,8 +63,7 @@ fun EditEventScreen(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    // Fix: Avoid destructuring syntax (parentheses) to solve component1() error
-                    datePickerState.selectedDateMillis?.let { millis ->
+                    datePickerState.selectedDateMillis?.let { millis: Long ->
                         val datePart = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(millis))
                         val currentStr = uiState.fechaHora
                         val timePart = if (currentStr.contains(" ")) currentStr.split(" ")[1] else "00:00"
@@ -85,10 +84,10 @@ fun EditEventScreen(
             onDismissRequest = { showTimePicker = false },
             confirmButton = {
                 TextButton(onClick = {
-                    val timeStr = String.format(Locale.getDefault(), "%02d:%02d", timePickerState.hour, timePickerState.minute)
+                    val timePart = String.format(Locale.getDefault(), "%02d:%02d", timePickerState.hour, timePickerState.minute)
                     val currentStr = uiState.fechaHora
                     val datePart = if (currentStr.contains(" ")) currentStr.split(" ")[0] else SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
-                    viewModel.onFechaHoraChange("$datePart $timeStr")
+                    viewModel.onFechaHoraChange("$datePart $timePart")
                     showTimePicker = false
                 }) { Text("ACEPTAR", color = FigmaGold) }
             },
@@ -137,8 +136,6 @@ fun EditEventScreen(
                         color = FigmaTextWhite,
                         fontSize = 20.sp,
                         fontWeight = FontWeight.SemiBold,
-                        textAlign = TextAlign.Start,
-                        overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
                             .weight(1f)
                             .padding(start = 10.dp)
