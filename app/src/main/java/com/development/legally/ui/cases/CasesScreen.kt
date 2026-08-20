@@ -29,7 +29,8 @@ fun CasesScreen(
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToClients: () -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
-    viewModel: CasosViewModel = viewModel()
+    viewModel: CasosViewModel = viewModel(),
+    onNavigateToEditEvent: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     

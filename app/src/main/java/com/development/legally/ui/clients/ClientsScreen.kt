@@ -26,7 +26,8 @@ fun ClientsScreen(
     onNavigateToNewEvent: () -> Unit = {},
     onNavigateToAgenda: () -> Unit = {},
     onNavigateToEditClient: (String) -> Unit = {},
-    viewModel: ClientViewModel = viewModel()
+    viewModel: ClientViewModel = viewModel(),
+    onNavigateToEditEvent: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showNewMenu by remember { mutableStateOf(false) }
