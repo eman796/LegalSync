@@ -21,7 +21,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.development.legally.R
@@ -30,7 +29,14 @@ import com.development.legally.ui.theme.*
 import com.development.legally.ui.navigation.LegallyBottomNavigationBar
 import com.development.legally.ui.ClasesSupremas.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.development.legally.data.model.Case
+import com.development.legally.data.model.Event
 import com.development.legally.ui.agenda.AgendaViewModel
+import com.development.legally.ui.cases.CasosViewModel
+import com.development.legally.ui.clients.ClientViewModel
+import com.google.firebase.Timestamp
+import java.text.SimpleDateFormat
+import java.util.*
 
 @Composable
 fun HomeScreen(
@@ -45,12 +51,45 @@ fun HomeScreen(
     onNavigateToEditClient: (String) -> Unit = {},
     onNavigateToEditCase: (String) -> Unit = {},
     onNavigateToEditEvent: (String) -> Unit = {},
-    agendaViewModel: AgendaViewModel = viewModel()
+    agendaViewModel: AgendaViewModel = viewModel(),
+    casosViewModel: CasosViewModel = viewModel(),
+    clientViewModel: ClientViewModel = viewModel()
 ) {
     var showNewMenu by remember { mutableStateOf(false) }
     
-    // Al pulsar de nuevo el icono de Inicio, recargamos (aunque no tiene boton especifico de refresco en LegallyBottomNavigationBar,
-    // se puede implementar si se desea el mismo comportamiento que Clientes/Agenda)
+    val agendaState by agendaViewModel.uiState.collectAsState()
+    val casosState by casosViewModel.uiState.collectAsState()
+    val clientsState by clientViewModel.uiState.collectAsState()
+
+    LaunchedEffect(Unit) {
+        agendaViewModel.loadEvents()
+        casosViewModel.loadCasos()
+        clientViewModel.loadClients()
+    }
+
+    // Lógica para "Qué hay para hoy" (Próximo evento)
+    val nextEvent = remember(agendaState.events) {
+        agendaState.events
+            .filter { it.fechaHora != null && it.fechaHora!!.toDate().after(Date()) }
+            .minByOrNull { it.fechaHora!!.toDate().time }
+    }
+
+    // Estadísticas reales
+    val activeCasesCount = casosState.cases.count { it.status == "Activo" || it.status == "En proceso" }
+    val todayAudienciasCount = agendaState.events.count { 
+        it.tipo == "Audiencia" && isSameDay(it.fechaHora, Date()) 
+    }
+    val upcomingEventsCount = agendaState.events.count { 
+        it.fechaHora != null && it.fechaHora!!.toDate().after(Date()) 
+    }
+    val totalClientsCount = clientsState.clients.size
+
+    // Casos más recientes
+    val recentCases = remember(casosState.cases) {
+        casosState.cases
+            .sortedByDescending { it.createdAt?.toDate()?.time ?: 0L }
+            .take(3)
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Scaffold(
@@ -65,14 +104,17 @@ fun HomeScreen(
                 ) {
                     UserAction(onLogoutConfirm = onLogout)
                     SectionHeader(title = "Inicio", modifier = Modifier.weight(1f))
-                    // Fix 4: Notificaciones reales en Inicio
                     NotificationAction(onNotificationClick = onNavigateToEditEvent)
                 }
             },
             bottomBar = { 
                 LegallyBottomNavigationBar(
                     currentRoute = "home",
-                    onInicioClick = { /* Podría recargar si se desea */ },
+                    onInicioClick = { 
+                        agendaViewModel.loadEvents()
+                        casosViewModel.loadCasos()
+                        clientViewModel.loadClients()
+                    },
                     onExpedientesClick = onNavigateToCases,
                     onCrearClick = { showNewMenu = true },
                     onAgendaClick = onNavigateToAgenda,
@@ -95,7 +137,19 @@ fun HomeScreen(
                 
                 item { SectionHeader(title = "¿Qué hay para hoy?") }
                 item { 
-                    NextEventCard(onClick = { onNavigateToEditEvent("event_id_123") }) 
+                    if (nextEvent != null) {
+                        NextEventCard(event = nextEvent, onClick = { onNavigateToEditEvent(nextEvent.eventId) })
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(100.dp)
+                                .border(1.dp, Color.Gray.copy(alpha = 0.3f), RoundedCornerShape(12.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text("No hay eventos próximos", color = Color.Gray)
+                        }
+                    }
                 }
 
                 item { 
@@ -110,10 +164,16 @@ fun HomeScreen(
 
                 item { 
                     StatsRow(
+                        activeCases = activeCasesCount,
+                        todayAudiencias = todayAudienciasCount,
+                        upcomingEvents = upcomingEventsCount,
+                        totalClients = totalClientsCount,
                         onNavigateToCases = onNavigateToCases,
-                        onNavigateToAgenda = onNavigateToAgenda
+                        onNavigateToAgenda = onNavigateToAgenda,
+                        onNavigateToClients = onNavigateToClients
                     ) 
                 }
+                
                 item {
                     Column {
                         Row(
@@ -131,28 +191,7 @@ fun HomeScreen(
                             )
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        RecentCasesList(onCaseClick = onNavigateToEditCase)
-                    }
-                }
-
-                item {
-                    Column {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(text = "Tareas pendientes", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                            Text(
-                                text = "Ver todo", 
-                                color = FigmaGold, 
-                                fontSize = 14.sp, 
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.clickable { onNavigateToAgenda() }
-                            )
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        PendingTasksList(onTaskClick = { onNavigateToEditCase("case_id_linked") })
+                        RecentCasesList(cases = recentCases, onCaseClick = onNavigateToEditCase)
                     }
                 }
                 
@@ -181,7 +220,13 @@ fun HomeScreen(
 }
 
 @Composable
-fun NextEventCard(onClick: () -> Unit) {
+fun NextEventCard(event: Event, onClick: () -> Unit) {
+    val date = event.fechaHora?.toDate() ?: Date()
+    val monthFormat = SimpleDateFormat("MMMM 'de' yyyy", Locale.getDefault())
+    val dayNameFormat = SimpleDateFormat("EEEE", Locale.getDefault())
+    val dayNumberFormat = SimpleDateFormat("dd", Locale.getDefault())
+    val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,25 +240,25 @@ fun NextEventCard(onClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(95.dp)) {
-                Text(text = "Mayo de 2026", color = Color.White, fontSize = 12.sp)
-                Text(text = "Martes", color = Color.White, fontSize = 15.sp)
-                Text(text = "20", color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
+                Text(text = monthFormat.format(date).replaceFirstChar { it.uppercase() }, color = Color.White, fontSize = 12.sp)
+                Text(text = dayNameFormat.format(date).replaceFirstChar { it.uppercase() }, color = Color.White, fontSize = 15.sp)
+                Text(text = dayNumberFormat.format(date), color = Color.White, fontSize = 32.sp, fontWeight = FontWeight.ExtraBold)
             }
             Box(modifier = Modifier.width(1.dp).height(80.dp).background(Color.White.copy(alpha = 0.5f)))
             Column(modifier = Modifier.weight(1f).padding(horizontal = 12.dp)) {
-                Text(text = "hh:mm:a/p", color = Color.White, fontSize = 14.sp)
-                Text(text = "Lorem Ipsum", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(text = "Caso numero Lorem Ipsum", color = Color.White, fontSize = 14.sp)
+                Text(text = timeFormat.format(date), color = Color.White, fontSize = 14.sp)
+                Text(text = event.titulo, color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(text = "Caso: ${event.casoRelacionado}", color = Color.White, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Spacer(modifier = Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(painter = painterResource(id = R.drawable.ic_location_pin), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(text = "HEARTBREAK AVENUE, TWICELAND", color = Color.White, fontSize = 10.sp, maxLines = 1)
+                    Text(text = event.lugar.ifEmpty { "Lugar no definido" }.uppercase(), color = Color.White, fontSize = 10.sp, maxLines = 1)
                 }
             }
             Column(horizontalAlignment = Alignment.End, verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.height(80.dp)) {
                 Box(modifier = Modifier.drawBehind { drawRoundRect(color = Color(0xFF9E8D44), style = Stroke(width = 2f, pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)), cornerRadius = CornerRadius(8.dp.toPx())) }.padding(horizontal = 10.dp, vertical = 4.dp), contentAlignment = Alignment.Center) {
-                    Text(text = "Audiencia", color = Color.White, fontSize = 11.sp)
+                    Text(text = event.tipo, color = Color.White, fontSize = 11.sp)
                 }
                 Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
             }
@@ -222,12 +267,20 @@ fun NextEventCard(onClick: () -> Unit) {
 }
 
 @Composable
-fun StatsRow(onNavigateToCases: () -> Unit, onNavigateToAgenda: () -> Unit) {
+fun StatsRow(
+    activeCases: Int,
+    todayAudiencias: Int,
+    upcomingEvents: Int,
+    totalClients: Int,
+    onNavigateToCases: () -> Unit,
+    onNavigateToAgenda: () -> Unit,
+    onNavigateToClients: () -> Unit
+) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        StatCard(modifier = Modifier.weight(1f), count = "+1k", labelLines = listOf("Expedien", "tes", "Activos"), icon = painterResource(id = R.drawable.ic_card_folder_figma), onClick = onNavigateToCases)
-        StatCard(modifier = Modifier.weight(1f), count = "X", labelLines = listOf("Audien", "cias", "Para: hoy"), icon = painterResource(id = R.drawable.ic_card_calendar_figma), onClick = onNavigateToAgenda)
-        StatCard(modifier = Modifier.weight(1f), count = "+1k", labelLines = listOf("Compromi", "sos", "Próximamente"), icon = painterResource(id = R.drawable.ic_card_clock_figma), onClick = onNavigateToAgenda)
-        StatCard(modifier = Modifier.weight(1f), count = "+1k", labelLines = listOf("Tareas", "Pendientes"), icon = painterResource(id = R.drawable.ic_card_tasks_figma), onClick = onNavigateToCases)
+        StatCard(modifier = Modifier.weight(1f), count = activeCases.toString(), labelLines = listOf("Expedien", "tes", "Activos"), icon = painterResource(id = R.drawable.ic_card_folder_figma), onClick = onNavigateToCases)
+        StatCard(modifier = Modifier.weight(1f), count = todayAudiencias.toString(), labelLines = listOf("Audien", "cias", "Para: hoy"), icon = painterResource(id = R.drawable.ic_card_calendar_figma), onClick = onNavigateToAgenda)
+        StatCard(modifier = Modifier.weight(1f), count = upcomingEvents.toString(), labelLines = listOf("Compromi", "sos", "Próximamente"), icon = painterResource(id = R.drawable.ic_card_clock_figma), onClick = onNavigateToAgenda)
+        StatCard(modifier = Modifier.weight(1f), count = totalClients.toString(), labelLines = listOf("Clientes", "Regis", "trados"), icon = painterResource(id = R.drawable.ic_nav_clientes_on), onClick = onNavigateToClients)
     }
 }
 
@@ -246,57 +299,38 @@ fun StatCard(modifier: Modifier = Modifier, count: String, labelLines: List<Stri
 }
 
 @Composable
-fun RecentCasesList(onCaseClick: (String) -> Unit) {
-    val cases = listOf("25-000044-033-PE", "20-000115-1218-PE", "25-002920-0175-PE")
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        cases.forEach { id ->
-            RecentCaseItem(id = id, onClick = { onCaseClick(id) })
-            HorizontalDivider(color = Color.White.copy(alpha = 0.1f), thickness = 1.dp)
+fun RecentCasesList(cases: List<Case>, onCaseClick: (String) -> Unit) {
+    if (cases.isEmpty()) {
+        Text("No hay casos recientes", color = Color.Gray, modifier = Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+    } else {
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            cases.forEach { case ->
+                RecentCaseItem(case = case, onClick = { onCaseClick(case.firestoreDocId) })
+                HorizontalDivider(color = Color.White.copy(alpha = 0.1f), thickness = 1.dp)
+            }
         }
     }
 }
 
 @Composable
-fun RecentCaseItem(id: String, onClick: () -> Unit) {
+fun RecentCaseItem(case: Case, onClick: () -> Unit) {
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp).clickable { onClick() }, verticalAlignment = Alignment.CenterVertically) {
         Box(modifier = Modifier.size(42.dp).background(FigmaGold.copy(alpha = 0.1f), RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
             Icon(painter = painterResource(id = R.drawable.ic_card_folder), contentDescription = null, tint = FigmaGold, modifier = Modifier.size(24.dp))
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(text = id, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Christian Bullgarelli vs Federico cruz", color = Color.Gray, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(text = case.caseNumber, color = Color.White, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Text(text = case.CaseTittle, color = Color.Gray, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        Text(text = "Hoy", color = Color.Gray, fontSize = 10.sp)
+        Text(text = if (isSameDay(case.createdAt, Date())) "Hoy" else SimpleDateFormat("dd MMM", Locale.getDefault()).format(case.createdAt?.toDate() ?: Date()), color = Color.Gray, fontSize = 10.sp)
     }
 }
 
-@Composable
-fun PendingTasksList(onTaskClick: () -> Unit) {
-    val tasks = listOf("Reunión con Jose Miguel Villalobos", "Reunión con Juan Diego Castro", "Reunión con Francisco Dall'Anese")
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        tasks.forEach { title ->
-            PendingTaskItem(title = title, onClick = onTaskClick)
-        }
-    }
-}
-
-@Composable
-fun PendingTaskItem(title: String, onClick: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().border(1.dp, FigmaGold, RoundedCornerShape(8.dp)).clickable { onClick() }, shape = RoundedCornerShape(8.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFF171E27))) {
-        Row(modifier = Modifier.padding(12.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Icon(painter = painterResource(id = R.drawable.ic_task_check_hollow), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(28.dp).clickable { })
-            Spacer(modifier = Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(text = title, color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(text = "Caso 25-000044-033-PE", color = Color.White, fontSize = 12.sp)
-            }
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Icon(painter = painterResource(id = R.drawable.ic_task_calendar_white), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(20.dp))
-                Text(text = "11:00", color = Color.White, fontSize = 10.sp)
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Icon(painter = painterResource(id = R.drawable.ic_arrow_right_gold), contentDescription = null, tint = Color.Unspecified, modifier = Modifier.size(20.dp))
-        }
-    }
+private fun isSameDay(timestamp: Timestamp?, date: Date): Boolean {
+    if (timestamp == null) return false
+    val cal1 = Calendar.getInstance().apply { time = timestamp.toDate() }
+    val cal2 = Calendar.getInstance().apply { time = date }
+    return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
+           cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
 }

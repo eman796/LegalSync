@@ -130,7 +130,7 @@ fun NotificationAction(
                         
                         if (uiState.notifications.isEmpty()) {
                             Text(
-                                "No hay notificaciones próximas", 
+                                "No hay notificaciones",
                                 color = Color.Gray, 
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(vertical = 16.dp).fillMaxWidth(),

@@ -38,6 +38,7 @@ fun NuevoClienteScreen(
 
     val uiState by viewModel.uiState.collectAsState()
 
+    // Observar si se guardó con éxito para cerrar la pantalla
     LaunchedEffect(uiState.isSaved) {
         if (uiState.isSaved) {
             viewModel.resetSaveState()
@@ -119,7 +120,7 @@ fun NuevoClienteScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Fix 2: Espacio para fecha de nacimiento
+        // Campo Fecha de Nacimiento añadido
         FormElement(
             label = "Fecha de nacimiento",
             placeholder = "dd/MM/yyyy",
